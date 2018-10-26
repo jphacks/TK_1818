@@ -33,13 +33,12 @@ server.post('/webhook', line.middleware(line_config), (req, res, next) => {
     // イベントオブジェクトを順次処理。
     req.body.events.forEach((event) => {
 
-        var userID = event.source.userId;
+        var userID = event.source.userId; //LINEを送ってきたユーザのID
         console.log(userID);
 
         // この処理の対象をイベントタイプがメッセージで、かつ、テキストタイプだった場合に限定。
         if (event.type == "message" && event.message.type == "text"){
-            // ユーザーからのテキストメッセージが「こんにちは」だった場合のみ反応。
-            // replyMessage()で返信し、そのプロミスをevents_processedに追加。
+            // replyMessage()でオウム返し、そのプロミスをevents_processedに追加。
             events_processed.push(bot.replyMessage(event.replyToken, {
                 type: "text",
                 text: event.message.text
