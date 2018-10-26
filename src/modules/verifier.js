@@ -1,3 +1,7 @@
+//Verify sentence
+//nglist : dict     
+//sentence : [[[]]] (#goo morph API)
+//verify sentence
 function verifyNGWord(nglist, sentence){
     ret = ""
     for(index in sentence){

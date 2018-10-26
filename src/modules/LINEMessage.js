@@ -1,8 +1,20 @@
+//LINE MessagingAPIのwrapper
 class LINEMessage{
     constructor(builder) {
         this.content = builder.content
     }
 };
+
+//wrapper用ビルダ(static使えないから外部に書いた)
+//how to use
+/*
+    wrap =  new LINEMessage(
+        new MainBuilder()
+        .type("text")
+        .text("HELLO WORLD")
+        .build()
+    ).content
+*/
 class MainBuilder{
     constructor() {
         this.content = {}
@@ -36,6 +48,8 @@ class MainBuilder{
         return new LINEMessage(this)
     }
 };
+
+//action用ビルダ(MainBuilder継承)
 class ActionBuilder extends MainBuilder{
     constructor() {
         super()
@@ -50,6 +64,7 @@ class ActionBuilder extends MainBuilder{
     }
 };
 
+//contents用ビルダ(ActionBuilder継承)
 class ContentsBuilder extends ActionBuilder{
     constructor() {
         super()
