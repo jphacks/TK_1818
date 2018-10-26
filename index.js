@@ -32,7 +32,7 @@ server.post('/webhook', line.middleware(line_config), (req, res, next) => {
 
     // イベントオブジェクトを順次処理。
     req.body.events.forEach((event) => {
-
+        console.log("event type: "+event.type);
         var userID = event.source.userId; //LINEを送ってきたユーザのID
         console.log(userID);
 
@@ -43,8 +43,11 @@ server.post('/webhook', line.middleware(line_config), (req, res, next) => {
                 type: "text",
                 text: event.message.text
             }));
-        }else{
-            console.log(event.type);
+        }else if(event.type == "follow"){
+            events_processed.push(bot.replyMessage(event.replyToken, {
+                type: "text",
+                text: "友達登録ありがとうございます!"
+            }));
         }
     });
 
