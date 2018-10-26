@@ -24,6 +24,9 @@ server.listen(process.env.PORT || 3000);
 // -----------------------------------------------------------------------------
 // 定型文の登録
 const START_MESSAGE = "「投稿」or「表示」";
+const POST_MESSAGE = "投稿する内容を入力してください";
+const SHOW = "表示";
+const POST = "投稿";
 
 
 // -----------------------------------------------------------------------------
@@ -33,26 +36,15 @@ server.post('/webhook', line.middleware(line_config), (req, res, next) => {
     // 先行してLINE側にステータスコード200でレスポンスする。
     res.sendStatus(200);
 
-    // すべてのイベント処理のプロミスを格納する配列。
-    let events_processed = [];
-
     // イベントオブジェクトを順次処理。
     req.body.events.forEach((event) => {
-        // bot.replyMessage()で返答を送信、そのプロミスをevents_processedに追加。
-        var promise = eventProcessor(event);
-        events_processed.push(promise);
+        // bot.replyMessage()で返答を送信
+        eventProcessor(event);
     });
-
-    // すべてのイベント処理が終了したら何個のイベントが処理されたか出力。
-    Promise.all(events_processed).then(
-        (response) => {
-            console.log(`${response.length} event(s) processed.`);
-        }
-    );
 });
 
 /*
- * LINE Messaging APIから送られてくるeventを処理して、bot.replyMessageのPromiseを返す
+ * LINE Messaging APIから送られてくるeventを処理して、bot.replyMessageする
  */
 function eventProcessor(event){
     var promise_ret = null;
@@ -65,10 +57,10 @@ function eventProcessor(event){
 
     if (event.type == "message" && event.message.type == "text"){
         //イベントタイプがメッセージで、かつ、テキストタイプだった場合の処理
-        // promise_ret = messageTextProcessor(event);
+        getUserDataFromDB(event, userID, messageTextProcessorCallBack);
     }else if(event.type == "follow"){
         // スタートメッセージを送信する
-        promise_ret = followProcessor(event);
+        followProcessor(event);
     }
 
     return promise_ret;
@@ -76,22 +68,40 @@ function eventProcessor(event){
 
 //イベントタイプがフォローの処理
 function followProcessor(event){
-    var promise_ret = sendStage1Message(event);
-    return promise_ret;
+    var userID = event.source.userId;
+    getUserDataFromDB(event, userID, sendStage1MessageCallBack);
+}
+
+function getUserDataFromDB(event, userID, callback){
+    MongoClient.connect(mongodbURI, (error, client) => {
+            var collection;
+    
+            const db = client.db(mongodbAddress);
+         
+            // コレクションの取得
+            collection = db.collection('users');
+         
+            // コレクション中で条件に合致するドキュメントを取得
+            collection.find({'userID': userID}).toArray((error, documents)=>{
+                var find = null;
+                for (var document of documents) {
+                    console.log('find!');
+                    console.log(document);
+                    find = document;
+                    break;
+                }
+                callback(event, userID, find);
+            });
+        });
 }
 
 // 表示or投稿を聞くときの処理
-function sendStage1Message(event){
-    var promise_ret = null;
-
-    var userID = event.source.userId;
-    var userData = getUserData(userID);
+function sendStage1MessageCallBack(event, userID, userData){
     if(userData == null){
         console.log("user data is null!");
         userData = makeNewUserData(userID); //データベース上にuserが登録されていなければ、登録する
     }
-    promise_ret = replyStartMessage(event); //yes or noのメッセージを送る
-    return promise_ret;
+    replyStartMessage(event); //yes or noのメッセージを送る
 }
 
 //DB上に新しいユーザを作成する
@@ -99,9 +109,7 @@ function makeNewUserData(userID){
     var ret_userData = {'userID': userID, status: 1, showData: "", count: 0};
     MongoClient.connect(mongodbURI, (error, client) => {
         var collection;
-
         const db = client.db(mongodbAddress);
-     
         // コレクションの取得
         collection = db.collection('users');
         collection.insertOne(ret_userData, (error, result) => {
@@ -111,48 +119,75 @@ function makeNewUserData(userID){
     return ret_userData;
 }
 
-//DBに新しいユーザを登録
-function insertNewUserDataToDB(userData){
-
-}
-
 //イベントタイプがメッセージで、かつ、テキストタイプだった場合のevent処理
-function messageTextProcessor(event){
-    var promise_ret = null;
-    
-    var userID = event.source.userId;
-    var userData = getUserData(userID);
+function messageTextProcessorCallBack(event, userID, userData){
+    if(userData == null)return;
 
+    var status = userData['status'];
+    var nextStatus = 1;
+    if(status == 1){
+        nextStatus = stage1Processor(event, userData);
+    }else if(status == 2){
 
+    }else if(status == 3){
+
+    }else{
+        return;
+    }
+    userData['status'] = nextStatus;
+    updateUserData(userData);
 }
 
-async function getUserData(userID){
-    var ret_userData = null;
-    console.log("get!");
-    ret_userData = await getUserDataFromMongoDB(userID);
-    console.log("done!: "+ret_userData);
-    return ret_userData;
+function updateUserData(userData){
+    MongoClient.connect(mongodbURI, (error, client) => {
+        var collection;
+
+        const db = client.db(mongodbAddress);
+     
+        // コレクションの取得
+        collection = db.collection('users');
+        collection.updateMany(
+            { userID: userData.userID },
+            { $set: userData },
+        (error, result) => {
+            console.log("updated!");
+        });
+    });
 }
 
-async function getUserDataFromMongoDB(userID){
-    var datab = await MongoClient.connect(mongodbURI);
-    console.log("a: "+datab);
-    var db = datab.db(mongodbAddress);
-    console.log("b: "+db);
-    const MyCollection = db.collection('users');
-    console.log("c: "+MyCollection);
-    const result = await MyCollection.find({'userID': userID}).toArray();
-    console.log("d: "+result);
-    return result;
+function stage1Processor(event, userData){
+    var text = event.message.text;
+    if(text == SHOW){
+        
+    }else if(text == POST){
+        stage1POST(event, userData);
+        return 2;
+    }else{
+        replyStartMessage(event);
+        return 1;
+    }
+}
+
+function stage1POST(event, userData){
+    bot.replyMessage(event.replyToken, {
+        type: "text",
+        text: POST_MESSAGE
+    });
 }
 
 /*
  * スタートメッセージを送信し、プロミスを返す
  */
 function replyStartMessage(event){
-    var promise = bot.replyMessage(event.replyToken, {
+    bot.replyMessage(event.replyToken, {
         type: "text",
         text: START_MESSAGE
     });
-    return promise;
+}
+
+function sleep(waitMsec) {
+    var startMsec = new Date();
+
+    // 指定ミリ秒間だけループさせる（CPUは常にビジー状態）
+    while (new Date() - startMsec < waitMsec);
 }
