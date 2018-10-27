@@ -883,20 +883,28 @@ function showTopPost(event, userData){
         });
         var length = find.length;
         find = find.slice(0, Math.min(RANDOM_SHOW_NUM, length));
-
-        var conts = []
-        //flex post messageを配列にpush
-        for(index in find){
-            if(conts.length == 10)break;
-            conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
-        }
-
-        //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
-        var msg = new LINEMessage(
-            {'content' : conts}
-        ).makeCarousel(conts).makeFlex('投稿内容表示')
-        if(conts.length != 0){
-            sendQuery(event.replyToken, msg)
-        }
+        getDBData(event, 'theme', {category:getCategoryFromStatus(userData.status)}, function(e, c, find2){
+            var post = {
+                endDate : '0/0/0/0',
+                summary : 'Tsutida kun',
+                category: getCategoryFromStatus(userData.status)
+            };
+            var conts = []
+            for(index in find2){
+                post = find2[index]
+                break;
+            }
+            var conts = [messageTemplate.FlexThemeMessage.getTemplate(post).content]
+            for(index in find){
+                conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
+            }
+            //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
+            var msg = new LINEMessage(
+                {'content' : conts}
+            ).makeCarousel(conts).makeFlex('投稿内容表示')
+            if(conts.length != 0){
+                sendQuery(event.replyToken, msg)
+            }
+        })
     });
 }
