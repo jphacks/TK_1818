@@ -373,8 +373,9 @@ function stageCHOOSEProcessor(event, userData){
         console.log("status: MIRU_MINNA!");
         
         // 自分以外のポストからランダムに5個選出
-        // mahitodo: カテゴリで絞り込み & ランダムポストの先頭にカテゴリメニューをくっつける
-        showRandomPost(event, {userID:{'$ne' : userData.userID}}); 
+        // mahitodo: ランダムポストの先頭にカテゴリメニューをくっつける
+        console.log("SEARCH: "+userData.userID+", "+getCategoryFromStatus(userData.status));
+        showRandomPost(event, userData, {userID:{'$ne' : userData.userID}, category: getCategoryFromStatus(userData.status)}); 
         //
         
         return userData.status;
@@ -390,7 +391,7 @@ function stageCHOOSEProcessor(event, userData){
         console.log("status: TOP_RANKER!");
         
         // 自分以外のポストからトップ5を選出
-        // mahitodo: カテゴリで絞り込み & ポストの先頭にカテゴリメニューをくっつける
+        // mahitodo: ポストの先頭にカテゴリメニューをくっつける
         showTopPost(event, userData); 
         //
         
@@ -739,6 +740,12 @@ function getCategoryFromStatus(status){
         return TSUKOMI;
     }else if(status == WRITE_OK_ARU){
         return ARU;
+    }else if(status == OGRI_CHOOSE){
+        return OGIRI;
+    }else if(status == TSUKOMI_CHOOSE){
+        return TSUKOMI;
+    }else if(status == ARU_CHOOSE){
+        return ARU;
     }else{
         return "YABAI!!!";
     }
@@ -815,8 +822,12 @@ function shuffleArray(array){
     return array;
 }
 
-function showRandomPost(event, condition){
+function showRandomPost(event, userData, condition){
     getRandomDBData(event, 5, 'post', condition, function(event, condition, find){
+
+        var length = find.length;
+        find = shuffleArray(find).slice(0, Math.min(RANDOM_SHOW_NUM, length));
+
         var conts = []
         //flex post messageを配列にpush
         for(index in find){
@@ -834,13 +845,22 @@ function showRandomPost(event, condition){
 }
 
 function showTopPost(event, userData){
-    getRandomDBData(event, 5, 'post', {userID:{'$ne' : userData.userID}}, function(event, condition, find){
+    getRandomDBData(event, 5, 'post', {category: getCategoryFromStatus(userData.status)}, function(event, condition, find){
+        find.sort(function(a,b){
+            if( a.goodCount < b.goodCount ) return -1;
+            if( a.goodCount > b.goodCount ) return 1;
+            return 0;
+        });
+        var length = find.length;
+        find = find.slice(0, Math.min(RANDOM_SHOW_NUM, length));
+
         var conts = []
         //flex post messageを配列にpush
         for(index in find){
             if(conts.length == 10)break;
             conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
         }
+
         //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
         var msg = new LINEMessage(
             {'content' : conts}
