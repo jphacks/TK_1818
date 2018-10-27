@@ -2,12 +2,12 @@
     "type": "bubble",
     "styles": {
         "hero": {
-            "backgroundColor": "#79b1ff"
+            "backgroundColor": "#ffe4e1"
         }
     },
     "hero": {
         "type": "image",
-        "url": "https://3.bp.blogspot.com/--qQ5wmWDm9k/UNQrZ_BB5iI/AAAAAAAAI6s/IoaUHEtRpzE/s1600/mark_face_cry.png",
+        "url": "https://3.bp.blogspot.com/-tSzqnc5n4ak/UNQrWx6BLrI/AAAAAAAAI6g/wvAwk_K1Avg/s1600/mark_face_angry.png",
         "size": "lg",
         "aspectMode": "cover",
         "action": {
@@ -46,52 +46,69 @@
     },
     "footer": {
         "type": "box",
-        "layout": "horizontal",
+        "layout": "vertical",
         "spacing": "md",
         "contents": [{
-                "type": "button",
-                "style": "secondary",
-                "action": {
-                    "type": "message",
-                    "label": "👍",
-                    "text": "いいね"
-                }
+                "type": "box",
+                "layout": "horizontal",
+                "spacing": "md",
+                "contents": [{
+                        "type": "button",
+                        "style": "secondary",
+                        "action": {
+                            "type": "message",
+                            "label": "👍",
+                            "text": "いいね"
+                        }
+                    },
+                    {
+                        "type": "separator"
+                    },
+                    {
+                        "type": "button",
+                        "style": "secondary",
+                        "action": {
+                            "type": "message",
+                            "label": "👎",
+                            "text": "よくない"
+                        }
+                    },
+                    {
+                        "type": "separator"
+                    },
+                    {
+                        "type": "button",
+                        "style": "secondary",
+                        "action": {
+                            "type": "message",
+                            "label": "👋",
+                            "text": "わーい"
+                        }
+                    },
+                    {
+                        "type": "separator"
+                    },
+                    {
+                        "type": "button",
+                        "style": "secondary",
+                        "action": {
+                            "type": "message",
+                            "label": "🙏",
+                            "text": "尊い"
+                        }
+                    }
+                ]
             },
             {
                 "type": "separator"
             },
             {
                 "type": "button",
-                "style": "secondary",
+                "style": "primary",
                 "action": {
                     "type": "message",
-                    "label": "👎",
-                    "text": "よくない"
-                }
-            },
-            {
-                "type": "separator"
-            },
-            {
-
-                "type": "button",
-                "style": "secondary",
-                "action": {
-                    "type": "message",
-                    "label": "☆",
-                    "text": "ほし"
-                }
-            },
-            {
-                "type": "separator"
-            },
-            {
-                "type": "button",
-                "style": "secondary",
-                "action": {
-                    "type": "message",
-                    "label": "🙏",
-                    "text": "尊い"
+                    "label": "返信する",
+                    "text": "返信"
                 }
             }
         ]

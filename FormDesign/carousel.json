@@ -1,0 +1,407 @@
+{
+    "type": "carousel",
+    "contents": [{
+            "type": "bubble",
+            "styles": {
+                "hero": {
+                    "backgroundColor": "#ffe4e1"
+                }
+            },
+            "hero": {
+                "type": "image",
+                "url": "https://3.bp.blogspot.com/-tSzqnc5n4ak/UNQrWx6BLrI/AAAAAAAAI6g/wvAwk_K1Avg/s1600/mark_face_angry.png",
+                "size": "lg",
+                "aspectMode": "cover",
+                "action": {
+                    "type": "uri",
+                    "uri": "http://linecorp.com/"
+                }
+            },
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "contents": [{
+                        "type": "box",
+                        "layout": "baseline",
+                        "spacing": "sm",
+                        "contents": [{
+                                "type": "text",
+                                "text": "お言葉",
+                                "weight": "bold",
+                                "size": "lg"
+                            },
+                            {
+                                "type": "text",
+                                "text": "Date: 2018/10/25",
+                                "color": "#aaaaaa",
+                                "size": "sm"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "text",
+                        "wrap": true,
+                        "text": "ウルトラマン拉致  ウルトラマンが拉致されて ",
+                        "size": "3xl"
+                    }
+                ]
+            },
+            "footer": {
+                "type": "box",
+                "layout": "vertical",
+                "spacing": "md",
+                "contents": [{
+                        "type": "box",
+                        "layout": "horizontal",
+                        "spacing": "md",
+                        "contents": [{
+                                "type": "button",
+                                "style": "secondary",
+                                "action": {
+                                    "type": "message",
+                                    "label": "👍",
+                                    "text": "いいね"
+                                }
+                            },
+                            {
+                                "type": "separator"
+                            },
+                            {
+                                "type": "button",
+                                "style": "secondary",
+                                "action": {
+                                    "type": "message",
+                                    "label": "👎",
+                                    "text": "よくない"
+                                }
+                            },
+                            {
+                                "type": "separator"
+                            },
+                            {
+                                "type": "button",
+                                "style": "secondary",
+                                "action": {
+                                    "type": "message",
+                                    "label": "👋",
+                                    "text": "わーい"
+                                }
+                            },
+                            {
+                                "type": "separator"
+                            },
+                            {
+                                "type": "button",
+                                "style": "secondary",
+                                "action": {
+                                    "type": "message",
+                                    "label": "🙏",
+                                    "text": "尊い"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "separator"
+                    },
+                    {
+                        "type": "button",
+                        "style": "primary",
+                        "action": {
+                            "type": "message",
+                            "label": "返信する",
+                            "text": "返信"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "bubble",
+            "styles": {
+                "footer": {
+                    "separator": true
+                }
+            },
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "spacing": "md",
+                "contents": [{
+                        "type": "box",
+                        "layout": "horizontal",
+                        "flex": 1,
+                        "contents": [{
+                            "type": "box",
+                            "layout": "vertical",
+                            "flex": 0,
+                            "contents": [{
+                                "type": "image",
+                                "url": "https://3.bp.blogspot.com/-tSzqnc5n4ak/UNQrWx6BLrI/AAAAAAAAI6g/wvAwk_K1Avg/s1600/mark_face_angry.png",
+                                "aspectMode": "cover",
+                                "aspectRatio": "1:1",
+                                "size": "xs"
+                            }]
+                        }, {
+                            "type": "box",
+                            "layout": "vertical",
+                            "flex": 2,
+                            "contents": [{
+                                "type": "text",
+                                "text": "異常者がたくさん発生しています。助けてください。こわいワ〜〜〜〜〜",
+                                "gravity": "top",
+                                "size": "xs",
+                                "flex": 1,
+                                "wrap": true
+                            }]
+                        }]
+                    }, {
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "md",
+                        "contents": [{
+                            "type": "box",
+                            "layout": "horizontal",
+                            "spacing": "md",
+                            "contents": [{
+                                    "type": "button",
+                                    "style": "secondary",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "👍",
+                                        "text": "いいね"
+                                    }
+                                },
+                                {
+                                    "type": "separator"
+                                },
+                                {
+                                    "type": "button",
+                                    "style": "secondary",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "👎",
+                                        "text": "よくない"
+                                    }
+                                },
+                                {
+                                    "type": "separator"
+                                },
+                                {
+                                    "type": "button",
+                                    "style": "secondary",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "👋",
+                                        "text": "わーい"
+                                    }
+                                },
+                                {
+                                    "type": "separator"
+                                },
+                                {
+                                    "type": "button",
+                                    "style": "secondary",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "🙏",
+                                        "text": "尊い"
+                                    }
+                                }
+                            ]
+                        }]
+                    }, {
+                        "type": "separator"
+                    },
+                    {
+                        "type": "box",
+                        "layout": "horizontal",
+                        "flex": 1,
+                        "contents": [{
+                            "type": "box",
+                            "layout": "vertical",
+                            "flex": 0,
+                            "contents": [{
+                                "type": "image",
+                                "url": "https://3.bp.blogspot.com/-tSzqnc5n4ak/UNQrWx6BLrI/AAAAAAAAI6g/wvAwk_K1Avg/s1600/mark_face_angry.png",
+                                "aspectMode": "cover",
+                                "aspectRatio": "1:1",
+                                "size": "xs"
+                            }]
+                        }, {
+                            "type": "box",
+                            "layout": "vertical",
+                            "flex": 2,
+                            "contents": [{
+                                "type": "text",
+                                "text": "ウルトラマンが好き",
+                                "gravity": "top",
+                                "size": "xs",
+                                "flex": 1,
+                                "wrap": true
+                            }]
+                        }]
+                    }, {
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "md",
+                        "contents": [{
+                            "type": "box",
+                            "layout": "horizontal",
+                            "spacing": "md",
+                            "contents": [{
+                                    "type": "button",
+                                    "style": "secondary",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "👍",
+                                        "text": "いいね"
+                                    }
+                                },
+                                {
+                                    "type": "separator"
+                                },
+                                {
+                                    "type": "button",
+                                    "style": "secondary",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "👎",
+                                        "text": "よくない"
+                                    }
+                                },
+                                {
+                                    "type": "separator"
+                                },
+                                {
+                                    "type": "button",
+                                    "style": "secondary",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "👋",
+                                        "text": "わーい"
+                                    }
+                                },
+                                {
+                                    "type": "separator"
+                                },
+                                {
+                                    "type": "button",
+                                    "style": "secondary",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "🙏",
+                                        "text": "尊い"
+                                    }
+                                }
+                            ]
+                        }]
+                    }
+                ]
+            }
+        },
+        {
+            "type": "bubble",
+            "styles": {
+                "header": {
+                    "backgroundColor": "#2A2A2A"
+                },
+                "footer": {
+                    "separator": true
+                }
+            },
+            "header": {
+                "type": "box",
+                "layout": "horizontal",
+                "contents": [{
+                    "flex": 0,
+                    "type": "image",
+                    "url": "https://3.bp.blogspot.com/-tSzqnc5n4ak/UNQrWx6BLrI/AAAAAAAAI6g/wvAwk_K1Avg/s1600/mark_face_angry.png",
+                    "size": "xxs"
+                }, {
+                    "type": "text",
+                    "color": "#FFFFFF",
+                    "text": "　見出し",
+                    "size": "xxl",
+                    "weight": "bold"
+                }]
+            },
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "contents": [{
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [{
+                            "type": "text",
+                            "text": "お言葉",
+                            "size": "lg",
+                            "weight": "bold"
+                        },
+                        {
+                            "type": "text",
+                            "text": "それを防げるのがJSONを見やすく加工してくれるビューワーであったり、データをメンテナンスできるエディタです。今回はオープンソース・ソフトウェアを中心に紹介します。",
+                            "wrap": true
+                        }
+                    ]
+                }]
+            },
+            "footer": {
+                "type": "box",
+                "layout": "vertical",
+                "spacing": "md",
+                "contents": [{
+                    "type": "box",
+                    "layout": "horizontal",
+                    "spacing": "md",
+                    "contents": [{
+                            "type": "button",
+                            "style": "secondary",
+                            "action": {
+                                "type": "message",
+                                "label": "👍",
+                                "text": "いいね"
+                            }
+                        },
+                        {
+                            "type": "separator"
+                        },
+                        {
+                            "type": "button",
+                            "style": "secondary",
+                            "action": {
+                                "type": "message",
+                                "label": "👎",
+                                "text": "よくない"
+                            }
+                        },
+                        {
+                            "type": "separator"
+                        },
+                        {
+                            "type": "button",
+                            "style": "secondary",
+                            "action": {
+                                "type": "message",
+                                "label": "👋",
+                                "text": "わーい"
+                            }
+                        },
+                        {
+                            "type": "separator"
+                        },
+                        {
+                            "type": "button",
+                            "style": "secondary",
+                            "action": {
+                                "type": "message",
+                                "label": "🙏",
+                                "text": "尊い"
+                            }
+                        }
+                    ]
+                }]
+            }
+        }
+    ]
+}
