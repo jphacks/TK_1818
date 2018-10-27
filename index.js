@@ -3,11 +3,13 @@
 const server = require("express")();
 const line = require("@line/bot-sdk"); // Messaging APIのSDKをインポート
 const mongodb = require('mongodb')
+const fs = require('fs')
 const MongoClient = mongodb.MongoClient //mongodbを利用するためのインスタンス
 const messageTemplate = require('./src/modules/MessageTemplate')
 const LINEModule = require('./src/modules/LINEMessage')
 const LINEMessage = LINEModule.lineMessage
-
+const Verifier = require('./src/modules/verifier')
+const Morphological = require('./src/modules/morph')
 // -----------------------------------------------------------------------------
 // パラメータ設定
 const line_config = {
@@ -16,6 +18,12 @@ const line_config = {
 };
 const mongodbURI = process.env.MONGODB_URI; //環境変数からMongoDBのURIを取得
 const mongodbAddress = mongodbURI.split("//")[1].split(":")[0]; //
+
+var words = fs.readFileSync('./src/assets/ngword.csv', 'utf-8').split(',')
+var ng_dict = {}
+for(word in words){
+    ng_dict[words[word]] = true
+}
 
 console.log("mongodbURI: "+ mongodbURI);
 console.log("mogodbAddress: "+mongodbAddress);
@@ -388,34 +396,38 @@ function makeNewUserData(userID){
  * DB上に新しいポストを作成する(まだ作業中なのでdateはpendingに設定)
  */
 function makeNewPostData(userID, text){
-    // todo
-    // 感情分析した値を入れる
-    var sentiment_data = {magnitude: 0, score: 0};
-    
-    var ret_postData = {
-        postID: makeRandomString(),
-        userID: userID,
-        text: text,
-        magnitude: sentiment_data.magnitude,
-        score: sentiment_data.score,
-        stamp: "",
-        date: "pending",
-        category: "",
-        goodCount: 0,
-        badCount: 0,
-        sadCount: 0,
-        angryCount: 0
-    };
-    MongoClient.connect(mongodbURI, (error, client) => {
-        var collection;
-        const db = client.db(mongodbAddress);
-        // コレクションの取得
-        collection = db.collection('post');
-        collection.insertOne(ret_postData, (error, result) => {
-            console.log("inserted!");
-        });
-    });
-    return ret_postData;
+    //get sentimental magnitude and score
+    Morphological.magnitude(text, function(sentiment_data, ret2){
+        //run morphological
+        Morphological.morphological(ret2, function(ret3) {
+            //verifying ng word to *****.
+            text = Verifier.verifyNGWord(ng_dict, ret3)
+            var ret_postData = {
+                postID: makeRandomString(),
+                userID: userID,
+                text: text,
+                magnitude: sentiment_data.sentences[0].sentiment.magnitude,
+                score: sentiment_data.sentences[0].sentiment.score,
+                stamp: "",
+                date: "pending",
+                category: "",
+                goodCount: 0,
+                badCount: 0,
+                sadCount: 0,
+                angryCount: 0
+            };
+            //temporary post mongo db client
+            MongoClient.connect(mongodbURI, (error, client) => {
+                var collection;
+                const db = client.db(mongodbAddress);
+                // コレクションの取得
+                collection = db.collection('post');
+                collection.insertOne(ret_postData, (error, result) => {
+                    console.log("inserted!");
+                });
+            });
+        })
+    })
 }
 
 /*
