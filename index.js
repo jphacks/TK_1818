@@ -50,6 +50,12 @@ const TSUKOMI = "つっこみ";
 const ARU = "あるある";
 const LAST_POST = "自分の投稿";
 
+const colors = {
+    "大喜利" : "#ff5500",
+    "つっこみ" : "#4488ff",
+    "あるある" : "#22FF11"
+}
+
 const MINA_POST = "みんなの投稿!";
 const TOP_RANKER = "上位ランキング";
 const POST_DO_IT = "自分も投稿してみる!!";
@@ -893,7 +899,7 @@ function showTopPost(event, userData){
                 post = find2[index]
                 break;
             }
-            var conts = [messageTemplate.FlexThemeMessage.getTemplate(post, getCategoryFromStatus(userData.status)).content]
+            var conts = [messageTemplate.FlexThemeMessage.getTemplate(post, colors[getCategoryFromStatus(userData.status)]).content]
             for(index in find){
                 conts.push(messageTemplate.MyselfResponseMessage.getTemplate(find[index], userData.userID).content)
             }
