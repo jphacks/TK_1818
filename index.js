@@ -5,6 +5,8 @@ const line = require("@line/bot-sdk"); // Messaging APIのSDKをインポート
 const mongodb = require('mongodb')
 const MongoClient = mongodb.MongoClient //mongodbを利用するためのインスタンス
 const messageTemplate = require('./src/modules/MessageTemplate')
+const LINEModule = require('./src/modules/LINEMessage')
+const LINEMessage = LINEModule.lineMessage
 
 // -----------------------------------------------------------------------------
 // パラメータ設定
@@ -111,7 +113,7 @@ function messageTextProcessorCallBack(event, userID, userData){
         return;
     }
     if(nextStatus == 1){
-        replyStartMessage(event);
+        // replyStartMessage(event);
     }
     userData['status'] = nextStatus;
     updateUserData(userData);
@@ -128,8 +130,19 @@ function stage1Processor(event, userData){
     if(text == SHOW){
         //「表示」
         getDBData(event, 'post', {userID:userData.userID}, function(event, condition, find){
-            console.log(JSON.stringify(messageTemplate.FlexPostMessage.getTemplate(find).makeFlex("unchi")))
-            sendQuery(event.replyToken, messageTemplate.FlexPostMessage.getTemplate(find).makeFlex("unchinchin"))
+            var conts = []
+            //flex post messageを配列にpush
+            for(index in find){
+                if(conts.length == 10)break;
+                conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index]).content)
+            }
+            //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
+            var msg = new LINEMessage(
+                {'content' : conts}
+            ).makeCarousel(conts).makeFlex('投稿内容表示')
+            if(conts.length != 0){
+                sendQuery(event.replyToken, msg)
+            }
         });
         return 1;
     }else if(text == POST){
@@ -201,10 +214,16 @@ function stage1POST(event, userData){
  * スタートメッセージを送信
  */
 function replyStartMessage(event){
-    sendQuery(event.replyToken, {
-        type: "text",
-        text: START_MESSAGE
-    });
+    sendQuery(event.replyToken, messageTemplate.QuickReplyMessage.getTemplate(
+        START_MESSAGE, 
+        {
+            "type": "text",
+            "label": "投稿"
+        },{
+            "type": "text",
+            "label": "表示"
+        }
+    ));
 }
 
 /*
@@ -289,12 +308,11 @@ function getDBData(event, collectionName, condition, callback){
      
         // コレクション中で条件に合致するドキュメントを取得
         collection.find(condition).toArray((error, documents)=>{
-            var find = null;
+            var find = [];
             for (var document of documents) {
                 console.log('find!');
                 console.log(document);
-                find = document;
-                break;
+                find.push(document);
             }
             callback(event, condition, find);
         });

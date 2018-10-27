@@ -9,8 +9,20 @@ var fs = require('fs');
 var ng_dict = {}
 var words = fs.readFileSync('./src/assets/ngword.csv', 'utf-8').split(',')
 var async = require('async');
-for(word in words) ng_dict[words[word]] = true
+const messageTemplate = require('./src/modules/MessageTemplate')
 
+for(word in words) ng_dict[words[word]] = true
+console.log(messageTemplate.QuickReplyMessage.getTemplate(
+        "START_MESSAGE", 
+        [{
+            "type": "text",
+            "label": "投稿"
+        },{
+            "type": "text",
+            "label": "表示"
+        }]
+    )
+)
 const morph = require('./src/modules/morph')
 
 const carousel = new LINEMessage(

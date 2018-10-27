@@ -6,9 +6,16 @@ class LINEMessage{
     makeFlex(text) {
         return {
             'type' : 'flex',
-            'contents' : this.content,
-            'altText' : text
+            'altText' : text,
+            'contents' : this.content
         }
+    }
+    makeCarousel(arr){
+        this.content = {
+            "type" : "carousel",
+            "contents" : arr
+        }
+        return this
     }
 };
 
