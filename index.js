@@ -5,6 +5,8 @@ const line = require("@line/bot-sdk"); // Messaging APIのSDKをインポート
 const mongodb = require('mongodb')
 const MongoClient = mongodb.MongoClient //mongodbを利用するためのインスタンス
 const messageTemplate = require('./src/modules/MessageTemplate')
+const LINEModule = require('./src/modules/LINEMessage')
+const LINEMessage = LINEModule.lineMessage
 
 // -----------------------------------------------------------------------------
 // パラメータ設定
@@ -130,10 +132,14 @@ function stage1Processor(event, userData){
         getDBData(event, 'post', {userID:userData.userID}, function(event, condition, find){
             var conts = []
             for(index in find){
-                conts.push(find[index])
+                if(conts.length == 10)break;
+                conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index]).content)
             }
+            var msg = new LINEMessage(
+                {'content' : conts}
+            ).makeCarousel(conts).makeFlex('投稿内容表示')
             if(conts.length != 0){
-                sendQuery(event.replyToken, messageTemplate.FlexPostMessage.getTemplate(find).makeFlex("投稿内容表示中"))
+                sendQuery(event.replyToken, msg)
             }
         });
         return 1;
