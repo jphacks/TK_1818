@@ -54,6 +54,8 @@ const MINA_POST = "みんなの投稿!";
 const TOP_RANKER = "上位ランキング";
 const POST_DO_IT = "自分も投稿してみる!!";
 
+const USE_RICH_MENU = "リッチメニューをご利用ください。";
+
 // -----------------------------------------------------------------------------
 // 定数の登録
 const TOP_CHOOSE = 1;
@@ -272,15 +274,14 @@ function stageTOPProcessor(event, userData){
 
         return ARU_CHOOSE;
     }else if(text == LAST_POST){
-        //mahitodo
         //過去の投稿を表示
         console.log("status: SHOW_LAST_POSTS!");
-
+        showMyPost(event, userData);
         return TOP_CHOOSE;
     }else{
         //何もしない
         console.log("status: DO_NOTHING!");
-
+        replyUseRichMessage(event); //リッチメニューの使用を促す
         return TOP_CHOOSE;
     }
     /*
@@ -330,6 +331,28 @@ function stageTOPProcessor(event, userData){
         return 1;
     }
     */
+}
+
+/*
+ * 自分の過去の投稿を表示する
+ */
+function showMyPost(event, userData){
+    getDBData(event, 'post', {userID:userData.userID}, function(event, condition, find){
+        var conts = []
+        //flex post messageを配列にpush
+        for(index in find){
+            if(conts.length == 10)break;
+            conts.push(messageTemplate.MyselfResponceMessage.getTemplate(find[index], userData.userID).content)
+        }
+        //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
+        console.log(JSON.stringify(conts))
+        var msg = new LINEMessage(
+            {'content' : conts}
+        ).makeCarousel(conts).makeFlex('投稿内容表示')
+        if(conts.length != 0){
+            sendQuery(event.replyToken, msg)
+        }
+    });
 }
 
 /*
@@ -480,6 +503,16 @@ function replyPostDoneMessage(event){
     bot.replyMessage(event.replyToken, {
         type: "text",
         text: POST_DONE_MESSAGE
+    });
+}
+
+/*
+ * リッチメニューの使用を促すメッセージ
+ */
+function replyUseRichMessage(event){
+    bot.replyMessage(event.replyToken, {
+        type: "text",
+        text: USE_RICH_MENU
     });
 }
 
