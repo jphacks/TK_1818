@@ -48,7 +48,7 @@ const MYSELF_SHOW = "見返す";
 const OGIRI = "大喜利";
 const TSUKOMI = "つっこみ";
 const ARU = "あるある";
-const LAST_POST = "過去の投稿";
+const LAST_POST = "自分の投稿";
 
 const MINA_POST = "みんなの投稿!";
 const TOP_RANKER = "上位ランキング";
@@ -361,8 +361,9 @@ function stageTOPProcessor(event, userData){
  * 自分の過去の投稿を表示する
  */
 function showMyPost(event, userData){
-    getDBData(event, 'post', {userID:userData.userID}, function(event, condition, find){
+    getDBData(event, 'post', {userID:userData.userID, date: {'$ne' : "pending"}}, function(event, condition, find){
         var conts = []
+        //koko
         //flex post messageを配列にpush
         for(index in find){
             if(conts.length == 10)break;
@@ -393,7 +394,7 @@ function stageCHOOSEProcessor(event, userData){
         // 自分以外のポストからランダムに5個選出
         // mahitodo: ランダムポストの先頭にカテゴリメニューをくっつける
         console.log("SEARCH: "+userData.userID+", "+getCategoryFromStatus(userData.status));
-        showRandomPost(event, userData, {userID:{'$ne' : userData.userID}, category: getCategoryFromStatus(userData.status)}); 
+        showRandomPost(event, userData, {date: {'$ne' : "pending"}, userID:{'$ne' : userData.userID}, category: getCategoryFromStatus(userData.status)}); 
         //
         
         return userData.status;
@@ -863,10 +864,10 @@ function showRandomPost(event, userData, condition){
 }
 
 function showTopPost(event, userData){
-    getRandomDBData(event, 5, 'post', {category: getCategoryFromStatus(userData.status)}, function(event, condition, find){
+    getRandomDBData(event, 5, 'post', {category: getCategoryFromStatus(userData.status), date: {'$ne' : "pending"}}, function(event, condition, find){
         find.sort(function(a,b){
-            if( a.goodCount < b.goodCount ) return -1;
-            if( a.goodCount > b.goodCount ) return 1;
+            if( a.goodCount < b.goodCount ) return 1;
+            if( a.goodCount > b.goodCount ) return -1;
             return 0;
         });
         var length = find.length;
