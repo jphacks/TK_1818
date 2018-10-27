@@ -45,8 +45,26 @@ const POST = "投稿";
 const ACCEPT_POST = "投稿する";
 const MYSELF_SHOW = "見返す";
 
+const OGIRI = "大喜利";
+const TSUKOMI = "つっこみ";
+const ARU = "あるある";
+const LAST_POST = "過去の投稿";
+
+const MINA_POST = "みんなの投稿!";
+const TOP_RANKER = "上位ランキング";
+const POST_DO_IT = "自分も投稿してみる!!";
+
 // -----------------------------------------------------------------------------
 // 定数の登録
+const TOP_CHOOSE = 1;
+const OGRI_CHOOSE = 2;
+const TSUKOMI_CHOOSE = 3;
+const ARU_CHOOSE = 4;
+const OGRI_WRITE = OGRI_CHOOSE * 10;
+const TSUKOMI_WRITE = TSUKOMI_CHOOSE * 10;
+const ARU_WRITE = ARU_CHOOSE * 10;
+const WRITE_OK = 8;
+
 const RANDOM_SHOW_NUM = 5; //投稿表示の上限数
 
 // -----------------------------------------------------------------------------
@@ -67,13 +85,9 @@ server.post('/webhook', line.middleware(line_config), (req, res, next) => {
  * LINE Messaging APIから送られてくるeventを処理して、bot.replyMessageする
  */
 function eventProcessor(event){
-    var promise_ret = null;
-
     console.log("event type: "+event.type); //eventタイプを出力しておく
-
     var userID = event.source.userId; //LINEを送ってきたユーザのID
     console.log("userID: "+userID);
-    
 
     if (event.type == "message" && event.message.type == "text"){
         //イベントタイプがメッセージで、かつ、テキストタイプだった場合の処理
@@ -85,8 +99,6 @@ function eventProcessor(event){
         // goodボタンなどの処理
         pushButtonProcessor(event);
     }
-
-    return promise_ret;
 }
 
 /*
@@ -174,34 +186,104 @@ function verifyUserCallBack(event, userID, userData){
  * userDataなどがデータベースからコールバックされてくる
  */
 function messageTextProcessorCallBack(event, userID, userData){
+    console.log("func: messageTextProcessorCallBack");
     if(userData == null)return;
 
     var status = userData['status'];
-    var nextStatus = 1; //次にセットされるステータス
-    if(status == 1){
-        nextStatus = stage1Processor(event, userData);
-    }else if(status == 2){
-        nextStatus = stage2Processor(event, userData);
-    }else if(status == 3){
-        nextStatus = stage3Processor(event, userData);
+    var nextStatus = TOP_CHOOSE; //次にセットされるステータス
+    if(status == TOP_CHOOSE){
+        console.log("status: TOP_CHOOSE");
+        nextStatus = stageTOPProcessor(event, userData);
+    }else if(status == OGRI_CHOOSE ||
+             status == TSUKOMI_CHOOSE ||
+             status == ARU_CHOOSE){
+        console.log("status: CHOOSE_NEXT!");         
+        nextStatus = stageCHOOSEProcessor(event, userData);
+        
+    }else if(status == OGRI_WRITE ||
+             status == TSUKOMI_WRITE ||
+             status == ARU_WRITE){
+        console.log("status: WRITE_NEXT!");
+        nextStatus = stageWRITEProcessor(event, userData);
+
+    }else if(status == WRITE_OK){
+        console.log("status: WRITE_GO!");
+        newStatus = stageWriteOKProcessor(event, userData);
     }else{
+        console.log("status: NANIMO_NAI!");
         return;
-    }
-    if(nextStatus == 1){
-        // replyStartMessage(event);
     }
     userData['status'] = nextStatus;
     updateUserData(userData);
 }
 
+function stageWriteOKProcessor(event, userData){
+    var text = event.message.text;
+
+    if(text == CANCEL){
+        // 「キャンセル」
+        console.log("status: CANCEL_WRITE_LATER!");
+        deletePendingPostData(userData.userID);
+        replyCancelMessage(event);
+        return TOP_CHOOSE;
+    }else if(text == ACCEPT_POST){
+        // 「投稿する」
+        // 投稿内容をDB上で確定する
+        console.log("status: ACCEPT_POST!");
+        fixPostData(userData.userID);
+        replyPostDoneMessage(event);
+        return TOP_CHOOSE;
+    }else if(text == TSUKOMI || text == ARU || text == OGIRI){
+        // リッチメニューからカテゴリメニューに移動
+        console.log("status: CANCEL_WRITE_LATER_AND_MOVE_OTHERS!");
+        deletePendingPostData(userData.userID);
+        return stageTOPProcessor(event, userData);
+    }else{
+        // 投稿内容を訂正する
+        console.log("status: FIX_POST!");
+        deletePendingPostData(userData.userID);
+        makeNewPostData(userData.userID, text);
+        replyConfirmMessage(event, text);
+        return WRITE_OK;
+    }
+}
+
 
 
 /*
- * 投稿 or 表示を選択したあとの処理を行う
+ * リッチメニューを選択したあとの処理を行う
  * 返り値は次のステータス
  */
-function stage1Processor(event, userData){
+function stageTOPProcessor(event, userData){
     var text = event.message.text; //入力された文字
+    if(text == OGIRI){
+        //大喜利に移動
+        console.log("status: GO_OGIRI!");
+
+        return OGRI_CHOOSE;
+    }else if(text == TSUKOMI){
+        //つっこみに移動
+        console.log("status: GO_TUKOMI!");
+
+        return TSUKOMI_CHOOSE;
+    }else if(text == ARU){
+        //あるあるに移動
+        console.log("status: GO_ARU!");
+
+        return ARU_CHOOSE;
+    }else if(text == LAST_POST){
+        //mahitodo
+        //過去の投稿を表示
+        console.log("status: SHOW_LAST_POSTS!");
+
+        return TOP_CHOOSE;
+    }else{
+        //何もしない
+        console.log("status: DO_NOTHING!");
+
+        return TOP_CHOOSE;
+    }
+    /*
     if(text == SHOW){
         //「表示」
         //todo ポストをランダムにゲットする
@@ -247,14 +329,45 @@ function stage1Processor(event, userData){
         //それ以外なので、移動しない
         return 1;
     }
+    */
 }
 
 /*
- * 投稿内容を入力したあとの処理を行う
+ * 各カテゴリの選択「random」「random」「insert」など
  * 返り値は次のステータス
  */
-function stage2Processor(event, userData){
+function stageCHOOSEProcessor(event, userData){
     var text = event.message.text; //投稿の文章
+
+    if(text == MINA_POST){
+        //「みんなの投稿を見る」処理
+        //mahitodo
+        console.log("status: MIRU_MINNA!");
+
+        return userData.status;
+    }else if(text == POST_DO_IT){
+        //「自分も投稿する」処理
+        console.log("status: JIBUN_TOKO!");
+
+        var status = userData.status;
+        return status * 10;
+    }else if(text == TOP_RANKER){
+        //「上位ランキング」処理
+        //mahitodo
+        console.log("status: TOP_RANKER!");
+
+        return userData.status;
+    }else if(text == TSUKOMI || text == ARU || text == OGIRI){
+        //つっこみ、大喜利、あるある処理
+        console.log("status: MOVE_OTHER!");
+        return stageTOPProcessor(event, userData);
+    }else{
+        //それ以外
+        //todo: あとで窓が出るように直す
+        console.log("status: ATODE_NAOSU!");
+        return userData.status;
+    }
+    /*
     if(text == CANCEL){
         // 投稿をキャンセルする
         replyCancelMessage(event);
@@ -266,14 +379,33 @@ function stage2Processor(event, userData){
         replyConfirmMessage(event, text);
         return 3;
     }
+    */
 }
 
 /*
  * 投稿内容が正しいかの確認をしたあとの処理を行う
  * 返り値は次のステータス
  */
-function stage3Processor(event, userData){
+function stageWRITEProcessor(event, userData){
     var text = event.message.text;
+
+    if(text == CANCEL){
+        //キャンセルして戻す
+        console.log("status: CANCEL_WRITE!");
+        replyCancelMessage(event);
+        return TOP_CHOOSE;
+    }else if(text == TSUKOMI || text == ARU || text == OGIRI){
+        // リッチメニューからカテゴリメニューに移動
+        console.log("status: CANCEL_WRITE_MOVE_OTHERS!");
+        return stageTOPProcessor(event, userData);
+    }else{
+        //投稿文をDBに格納など
+        console.log("status: SAVE_DATABASE!");
+
+        return WRITE_OK;
+    }
+
+    /*
     if(text == CANCEL){
         // 「キャンセル」
         deletePendingPostData(userData.userID);
@@ -292,6 +424,7 @@ function stage3Processor(event, userData){
         replyConfirmMessage(event, text);
         return 3;
     }
+    */
 }
 
 /*
@@ -506,6 +639,7 @@ function makeNewUserData(userID){
  * DB上に新しいポストを作成する(まだ作業中なのでdateはpendingに設定)
  */
 function makeNewPostData(userID, text){
+    //todo: カテゴリをnewの時に入れなければいけない
     //get sentimental magnitude and score
     Morphological.magnitude(text, function(sentiment_data, ret2){
         //run morphological
