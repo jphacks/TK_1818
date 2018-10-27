@@ -396,10 +396,11 @@ function makeNewUserData(userID){
  * DB上に新しいポストを作成する(まだ作業中なのでdateはpendingに設定)
  */
 function makeNewPostData(userID, text){
-    // todo filter
+    //get sentimental magnitude and score
     Morphological.magnitude(text, function(sentiment_data, ret2){
-        console.log(JSON.stringify(sentiment_data.sentences))
+        //run morphological
         Morphological.morphological(ret2, function(ret3) {
+            //verifying ng word to *****.
             text = Verifier.verifyNGWord(ng_dict, ret3)
             var ret_postData = {
                 postID: makeRandomString(),
@@ -415,8 +416,7 @@ function makeNewPostData(userID, text){
                 sadCount: 0,
                 angryCount: 0
             };
-            console.log(ret_postData)
-            console.log(text)
+            //temporary post mongo db client
             MongoClient.connect(mongodbURI, (error, client) => {
                 var collection;
                 const db = client.db(mongodbAddress);
