@@ -426,9 +426,10 @@ function stageCHOOSEProcessor(event, userData){
         return TOP_CHOOSE;
     }else{
         //それ以外
-        //todo: あとで窓が出るように直す
+        //todo: やだあああああ
         console.log("status: ATODE_NAOSU!");
-        return userData.status;
+        event.message.text = getCategoryFromStatus(userData.status);
+        return stageTOPProcessor(event, userData);
     }
     /*
     if(text == CANCEL){
