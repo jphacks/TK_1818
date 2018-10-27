@@ -111,7 +111,7 @@ function messageTextProcessorCallBack(event, userID, userData){
         return;
     }
     if(nextStatus == 1){
-        replyStartMessage(event);
+        // replyStartMessage(event);
     }
     userData['status'] = nextStatus;
     updateUserData(userData);
@@ -128,8 +128,7 @@ function stage1Processor(event, userData){
     if(text == SHOW){
         //「表示」
         getDBData(event, 'post', {userID:userData.userID}, function(event, condition, find){
-            console.log(JSON.stringify(messageTemplate.FlexPostMessage.getTemplate(find).makeFlex("unchi")))
-            sendQuery(event.replyToken, messageTemplate.FlexPostMessage.getTemplate(find).makeFlex("unchinchin"))
+            sendQuery(event.replyToken, messageTemplate.FlexPostMessage.getTemplate(find).makeFlex("投稿内容表示中"))
         });
         return 1;
     }else if(text == POST){
@@ -201,10 +200,16 @@ function stage1POST(event, userData){
  * スタートメッセージを送信
  */
 function replyStartMessage(event){
-    sendQuery(event.replyToken, {
-        type: "text",
-        text: START_MESSAGE
-    });
+    sendQuery(event.replyToken, messageTemplate.QuickReplyMessage.getTemplate(
+        START_MESSAGE, 
+        {
+            "type": "text",
+            "label": "投稿"
+        },{
+            "type": "text",
+            "label": "表示"
+        }
+    ));
 }
 
 /*
