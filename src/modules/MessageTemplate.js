@@ -57,26 +57,20 @@ module.exports = {
                             .contents(
                                 {
                                     "type": "text",
-                                    "text": post.theme,
-                                    "size": "lg",
-                                    "weight": "bold",
-                                    "wrap" : true
-                                }
-                            )
-                            .contents(
-                                {
-                                    "type": "text",
-                                    "text": post.date,
+                                    "text": "締め切り"+post.endDate,
                                     "color": "#aaaaaa",
-                                    "size": "sm"
+                                    "size": "sm",
+                                    "align": "end"
                                 }
                             ).build()
                         )
                         .contents(
                             {
                                 "type": "text",
-                                "text": post.text,
-                                "wrap": true
+                                "text": post.summary,
+                                "size": "xl",
+                                "weight": "bold",
+                                "wrap" : true
                             }
                         ).build()
                     ).build()

@@ -256,6 +256,24 @@ function stageWriteOKProcessor(event, userData){
     }
 }
 
+function displayTheme(event, text){
+    getDBData(event, 'theme', {category:text}, function(e, c, find){
+        var post = {
+            endDate : '0/0/0/0',
+            summary : 'Tsutida kun',
+            category: text
+        };
+        for(index in find){
+            post = find[index]
+            break;
+        }
+        console.log("post : " , post)
+        if(post != null){
+            console.log("template : ", messageTemplate.FlexThemeMessage.getTemplate(post).makeFlex('テーマ表示'))
+            sendQuery(event.replyToken,messageTemplate.FlexThemeMessage.getTemplate(post).makeFlex('テーマ表示'))
+        }
+    })
+}
 
 
 /*
@@ -267,17 +285,17 @@ function stageTOPProcessor(event, userData){
     if(text == OGIRI){
         //大喜利に移動
         console.log("status: GO_OGIRI!");
-
+        displayTheme(event, text)
         return OGRI_CHOOSE;
     }else if(text == TSUKOMI){
         //つっこみに移動
         console.log("status: GO_TUKOMI!");
-
+        displayTheme(event, text)
         return TSUKOMI_CHOOSE;
     }else if(text == ARU){
         //あるあるに移動
         console.log("status: GO_ARU!");
-
+        displayTheme(event, text)
         return ARU_CHOOSE;
     }else if(text == LAST_POST){
         //過去の投稿を表示
