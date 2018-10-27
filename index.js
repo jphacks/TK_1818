@@ -45,6 +45,9 @@ const POST = "投稿";
 const ACCEPT_POST = "投稿する";
 const DENY_POST = "訂正する";
 
+// -----------------------------------------------------------------------------
+// 定数の登録
+const RANDOM_SHOW_NUM = 5; //投稿表示の上限数
 
 // -----------------------------------------------------------------------------
 // ルーター設定
@@ -88,6 +91,7 @@ function eventProcessor(event){
 
 /*
  * postbackイベントの処理
+ * goodボタンなどを押した時の処理
  */
 function pushButtonProcessor(event){
     var userID = event.source.userId;
@@ -100,10 +104,16 @@ function pushButtonProcessor(event){
 
     console.log(data);
 
-    verifyEvalDataToDB(event, postID, type, pushUserID, insertEvalDataToDB);
+    // 「eval」コレクションに新たにデータを追加し、「post」コレクションのgoodCountなどをインクリメントする
+    verifyEvalDataToDB(event, postID, type, pushUserID, insertEvalDataToDBCallBack);
 }
 
+/*
+ * 「eval」コレクションに重複したデータが存在しないことを確認する
+ * 既存でなければ、callbackを実行
+ */
 function verifyEvalDataToDB(event, postID, type, pushUserID, callback){
+    // データベースからpostID, pushUserIDが同じものを検索
     getDBData(event, 'eval', {postID: postID, userID: pushUserID}, function(event, condition, find){
         var val = null;
         for(index in find){
@@ -111,12 +121,19 @@ function verifyEvalDataToDB(event, postID, type, pushUserID, callback){
             break;
         }
         if(val != null)return;
+
+        //見つからなければcallback実行
         callback(postID, type, pushUserID);
     });
 }
 
-function insertEvalDataToDB(postID, type, pushUserID){
+/*
+ * 「eval」コレクションに新たにデータを追加し、「post」コレクションのgoodCountなどをインクリメントする関数
+ */
+function insertEvalDataToDBCallBack(postID, type, pushUserID){
     var ret_evalData = {postID: postID, userID: pushUserID, eval: type, comment: "", date : getNowDateString()};
+    
+    // 「eval」コレクションに新たにデータを挿入
     MongoClient.connect(mongodbURI, (error, client) => {
         var collection;
         const db = client.db(mongodbAddress);
@@ -127,6 +144,7 @@ function insertEvalDataToDB(postID, type, pushUserID){
         });
     });
 
+    // 既存のpostデータのtypeに対応する「...Count」をインクリメント
     evalPostData(postID, type);
     
     return ret_evalData;
@@ -186,7 +204,8 @@ function stage1Processor(event, userData){
     var text = event.message.text; //入力された文字
     if(text == SHOW){
         //「表示」
-        getDBData(event, 'post', {userID:userData.userID}, function(event, condition, find){
+        //todo ポストをランダムにゲットする
+        getRandomDBData(event, 5, 'post', {userID:{'$ne' : userData.userID}}, function(event, condition, find){
             var conts = []
             //flex post messageを配列にpush
             for(index in find){
@@ -376,6 +395,30 @@ function getDBData(event, collectionName, condition, callback){
     });
 }
 
+function getRandomDBData(event, num, collectionName, condition, callback){
+    MongoClient.connect(mongodbURI, (error, client) => {
+        var collection;
+         const db = client.db(mongodbAddress);
+     
+        // コレクションの取得
+        collection = db.collection(collectionName);
+     
+        // コレクション中で条件に合致するドキュメントを取得
+        collection.find(condition).toArray((error, documents)=>{
+            var find = [];
+            for (var document of documents) {
+                console.log('find!');
+                console.log(document);
+                find.push(document);
+            }
+            var length = find.length;
+            find = shuffleArray(find).slice(0, Math.min(RANDOM_SHOW_NUM, length));
+            
+            callback(event, condition, find);
+        });
+    });
+}
+
 
 /*
  * DBの「users」コレクションから指定したuserIDのデータを見つけて、callbackに投げる関数
@@ -536,4 +579,17 @@ function deletePendingPostData(userID){
             console.log("deleted!");
         });
     });
+}
+
+/*
+ * Fisher–Yatesアルゴリズムを用いてシャッフルを行う
+ */
+function shuffleArray(array){
+    for(var i = array.length - 1; i > 0; i--){
+        var r = Math.floor(Math.random() * (i + 1));
+        var tmp = array[i];
+        array[i] = array[r];
+        array[r] = tmp;
+    }
+    return array;
 }
