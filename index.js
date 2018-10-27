@@ -128,7 +128,13 @@ function stage1Processor(event, userData){
     if(text == SHOW){
         //「表示」
         getDBData(event, 'post', {userID:userData.userID}, function(event, condition, find){
-            sendQuery(event.replyToken, messageTemplate.FlexPostMessage.getTemplate(find).makeFlex("投稿内容表示中"))
+            var conts = []
+            for(index in find){
+                conts.push(find[index])
+            }
+            if(conts.length != 0){
+                sendQuery(event.replyToken, messageTemplate.FlexPostMessage.getTemplate(find).makeFlex("投稿内容表示中"))
+            }
         });
         return 1;
     }else if(text == POST){
@@ -294,12 +300,11 @@ function getDBData(event, collectionName, condition, callback){
      
         // コレクション中で条件に合致するドキュメントを取得
         collection.find(condition).toArray((error, documents)=>{
-            var find = null;
+            var find = [];
             for (var document of documents) {
                 console.log('find!');
                 console.log(document);
-                find = document;
-                break;
+                find.push(document);
             }
             callback(event, condition, find);
         });
