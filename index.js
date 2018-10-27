@@ -215,7 +215,7 @@ function messageTextProcessorCallBack(event, userID, userData){
             status == WRITE_OK_TSUKOMI ||
             status == WRITE_OK_ARU){
         console.log("status: WRITE_GO!");
-        newStatus = stageWriteOKProcessor(event, userData);
+        nextStatus = stageWriteOKProcessor(event, userData);
     }else{
         console.log("status: NANIMO_NAI!");
         return;
