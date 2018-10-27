@@ -419,6 +419,11 @@ function stageCHOOSEProcessor(event, userData){
         //つっこみ、大喜利、あるある処理
         console.log("status: MOVE_OTHER!");
         return stageTOPProcessor(event, userData);
+    }else if(text == LAST_POST){
+        //過去の投稿を表示
+        console.log("status: SHOW_LAST_POSTS!");
+        showMyPost(event, userData);
+        return TOP_CHOOSE;
     }else{
         //それ以外
         //todo: あとで窓が出るように直す
