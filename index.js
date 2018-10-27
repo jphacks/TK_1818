@@ -498,10 +498,21 @@ function stageWRITEProcessor(event, userData){
  * 投稿文の入力を促すメッセージを出す
  */
 function stage1POST(event, userData){
-    sendQuery(event.replyToken, {
-        type: "text",
-        text: POST_MESSAGE
-    });
+    sendQuery(event.replyToken, 
+        messageTemplate.QuickReplyMessage.getTemplate(
+            POST_MESSAGE,
+            [
+                {
+                    'type' : 'action',
+                    'action' : {
+                        'type' : 'message',
+                        'label' : CANCEL,
+                        'text' : CANCEL
+                    }
+                }
+            ]
+        )
+    )
 }
 
 /*
