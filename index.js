@@ -70,9 +70,58 @@ function eventProcessor(event){
     }else if(event.type == "follow"){
         // スタートメッセージを送信する
         followProcessor(event);
+    }else if(event.type == "postback"){
+        // goodボタンなどの処理
+        pushButtonProcessor(event);
     }
 
     return promise_ret;
+}
+
+/*
+ * postbackイベントの処理
+ */
+function pushButtonProcessor(event){
+    var userID = event.source.userId;
+    console.log(event);
+    if(event.postback == null)return;
+    var data = event.postback.data.split(":");
+    var postID = data[0];
+    var type = data[1];
+    var pushUserID = data[2];
+
+    console.log(data);
+
+    verifyEvalDataToDB(event, postID, type, pushUserID, insertEvalDataToDB);
+}
+
+function verifyEvalDataToDB(event, postID, type, pushUserID, callback){
+    getDBData(event, 'eval', {postID: postID, userID: pushUserID}, function(event, condition, find){
+        var val = null;
+        for(index in find){
+            val = find[index];
+            break;
+        }
+        if(val != null)return;
+        callback(postID, type, pushUserID);
+    });
+}
+
+function insertEvalDataToDB(postID, type, pushUserID){
+    var ret_evalData = {postID: postID, userID: pushUserID, eval: type, comment: "", date : getNowDateString()};
+    MongoClient.connect(mongodbURI, (error, client) => {
+        var collection;
+        const db = client.db(mongodbAddress);
+        // コレクションの取得
+        collection = db.collection('eval');
+        collection.insertOne(ret_evalData, (error, result) => {
+            console.log("inserted!");
+        });
+    });
+
+    evalPostData(postID, type);
+    
+    return ret_evalData;
 }
 
 /*
@@ -134,7 +183,7 @@ function stage1Processor(event, userData){
             //flex post messageを配列にpush
             for(index in find){
                 if(conts.length == 10)break;
-                conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index]).content)
+                conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
             }
             //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
             var msg = new LINEMessage(
@@ -432,6 +481,29 @@ function fixPostData(userID){
         collection.updateMany(
             { userID: userID, date: "pending"},
             { $set: {date: getNowDateString()} },
+        (error, result) => {
+            console.log("fixed!!");
+        });
+    });
+}
+
+/*
+ * postデータに評価をつける
+ */
+function evalPostData(postID, type){
+    MongoClient.connect(mongodbURI, (error, client) => {
+        var collection;
+
+        const db = client.db(mongodbAddress);
+        
+        var sp = {};
+        sp[type+"Count"] = 1;
+
+        // コレクションの取得
+        collection = db.collection('post');
+        collection.updateMany(
+            { postID: postID},
+            { $inc: sp },
         (error, result) => {
             console.log("fixed!!");
         });
