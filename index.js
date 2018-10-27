@@ -338,7 +338,7 @@ function stageTOPProcessor(event, userData){
             //flex post messageを配列にpush
             for(index in find){
                 if(conts.length == 10)break;
-                conts.push(messageTemplate.MyselfResponceMessage.getTemplate(find[index], userData.userID).content)
+                conts.push(messageTemplate.MyselfResponseMessage.getTemplate(find[index], userData.userID).content)
             }
             //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
             console.log(JSON.stringify(conts))
@@ -367,7 +367,7 @@ function showMyPost(event, userData){
         //flex post messageを配列にpush
         for(index in find){
             if(conts.length == 10)break;
-            conts.push(messageTemplate.MyselfResponceMessage.getTemplate(find[index], userData.userID).content)
+            conts.push(messageTemplate.MyselfResponseMessage.getTemplate(find[index], userData.userID).content)
         }
         //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
         console.log(JSON.stringify(conts))
@@ -841,25 +841,36 @@ function shuffleArray(array){
     return array;
 }
 
-function showRandomPost(event, userData, condition){
+function showRandomPost(event, userData, condition, category){
     getRandomDBData(event, 5, 'post', condition, function(event, condition, find){
 
         var length = find.length;
         find = shuffleArray(find).slice(0, Math.min(RANDOM_SHOW_NUM, length));
+        getDBData(event, 'theme', {category:condition.category}, function(e, c, find2){
+            var post = {
+                endDate : '0/0/0/0',
+                summary : 'Tsutida kun',
+                category: condition.category
+            };
+            for(index in find2){
+                post = find2[index]
+                break;
+            }
+            var conts = [messageTemplate.FlexThemeMessage.getTemplate(post).content]
+            //flex post messageを配列にpush
+            for(index in find){
+                conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
+            }
 
-        var conts = []
-        //flex post messageを配列にpush
-        for(index in find){
-            if(conts.length == 10)break;
-            conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
-        }
-        //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
-        var msg = new LINEMessage(
-            {'content' : conts}
-        ).makeCarousel(conts).makeFlex('投稿内容表示')
-        if(conts.length != 0){
-            sendQuery(event.replyToken, msg)
-        }
+            console.log("find : ", find)
+            //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
+            var msg = new LINEMessage(
+                {'content' : conts}
+            ).makeCarousel(conts).makeFlex('投稿内容表示')
+            if(conts.length != 0){
+                sendQuery(event.replyToken, msg)
+            }
+        })
     });
 }
 
@@ -872,20 +883,28 @@ function showTopPost(event, userData){
         });
         var length = find.length;
         find = find.slice(0, Math.min(RANDOM_SHOW_NUM, length));
-
-        var conts = []
-        //flex post messageを配列にpush
-        for(index in find){
-            if(conts.length == 10)break;
-            conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
-        }
-
-        //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
-        var msg = new LINEMessage(
-            {'content' : conts}
-        ).makeCarousel(conts).makeFlex('投稿内容表示')
-        if(conts.length != 0){
-            sendQuery(event.replyToken, msg)
-        }
+        getDBData(event, 'theme', {category:getCategoryFromStatus(userData.status)}, function(e, c, find2){
+            var post = {
+                endDate : '0/0/0/0',
+                summary : 'Tsutida kun',
+                category: getCategoryFromStatus(userData.status)
+            };
+            var conts = []
+            for(index in find2){
+                post = find2[index]
+                break;
+            }
+            var conts = [messageTemplate.FlexThemeMessage.getTemplate(post).content]
+            for(index in find){
+                conts.push(messageTemplate.MyselfResponseMessage.getTemplate(find[index], userData.userID).content)
+            }
+            //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
+            var msg = new LINEMessage(
+                {'content' : conts}
+            ).makeCarousel(conts).makeFlex('投稿内容表示')
+            if(conts.length != 0){
+                sendQuery(event.replyToken, msg)
+            }
+        })
     });
 }

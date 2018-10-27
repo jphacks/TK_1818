@@ -4,11 +4,14 @@ var ActionBuilder = LINEModule.actionBuilder
 var MainBuilder = LINEModule.mainBuilder
 var ContentsBuilder = LINEModule.contentsBuilder
 //reaction stamp
+// var stamp = {
+//     "good" : "👍",
+//     "bad"  : "👎",
+//     "sad"  : "👋",
+//     "angry": "🙏"
+// }
 var stamp = {
-    "good" : "👍",
-    "bad"  : "👎",
-    "sad"  : "👋",
-    "angry": "🙏"
+    "good" : "イイね👍!"
 }
 module.exports = {
     FlexThemeMessage : {
@@ -129,7 +132,7 @@ module.exports = {
             )
         }
     },
-    MyselfResponceMessage : {
+    MyselfResponseMessage : {
         getTemplate : function(post) {
             var counter = 0
             var cont = new ContentsBuilder()
