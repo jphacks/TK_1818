@@ -895,7 +895,7 @@ function showTopPost(event, userData){
             }
             var conts = [messageTemplate.FlexThemeMessage.getTemplate(post).content]
             for(index in find){
-                conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
+                conts.push(messageTemplate.MyselfResponceMessage.getTemplate(find[index], userData.userID).content)
             }
             //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
             var msg = new LINEMessage(
