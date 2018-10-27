@@ -7,18 +7,15 @@ var ContentsBuilder = LINEModule.contentsBuilder
 module.exports = {
     QuickReplyMessage: {
         /*
-         * data : text(str), replies([{action}])
+         * data : text(str), replies([{}])
          */
-        getTemplate : function(data, replies) {
+        getTemplate : function(data) {
             var builder = new MainBuilder()
                         .type('text')
-                        .text(data)
-            for(index in replies){
-                var act = replies[index]
-                builder.quickReply(
-                    new ActionBuilder()
-                    .action(act)
-                )
+                        .text(date.text)
+            for(index in data.replies){
+                var act = data.replies[index]
+                builder.quickReply(act)
             }
             return new LINEMessage(builder.build())
         }
