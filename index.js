@@ -845,20 +845,30 @@ function showRandomPost(event, userData, condition){
 
         var length = find.length;
         find = shuffleArray(find).slice(0, Math.min(RANDOM_SHOW_NUM, length));
-
-        var conts = []
-        //flex post messageを配列にpush
-        for(index in find){
-            if(conts.length == 10)break;
-            conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
-        }
-        //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
-        var msg = new LINEMessage(
-            {'content' : conts}
-        ).makeCarousel(conts).makeFlex('投稿内容表示')
-        if(conts.length != 0){
-            sendQuery(event.replyToken, msg)
-        }
+        //kokodayo
+        getDBData(event, 'theme', {category:text}, function(e, c, find){
+            var post = {
+                endDate : '0/0/0/0',
+                summary : 'Tsutida kun',
+                category: text
+            };
+            for(index in find){
+                post = find[index]
+                break;
+            }
+            var conts = [messageTemplate.FlexThemeMessage.getTemplate(post).content]
+            //flex post messageを配列にpush
+            for(index in find){
+                conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
+            }
+            //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
+            var msg = new LINEMessage(
+                {'content' : conts}
+            ).makeCarousel(conts).makeFlex('投稿内容表示')
+            if(conts.length != 0){
+                sendQuery(event.replyToken, msg)
+            }
+        })
     });
 }
 
