@@ -845,14 +845,14 @@ function showRandomPost(event, userData, condition, category){
 
         var length = find.length;
         find = shuffleArray(find).slice(0, Math.min(RANDOM_SHOW_NUM, length));
-        getDBData(event, 'theme', {category:condition.category}, function(e, c, find){
+        getDBData(event, 'theme', {category:condition.category}, function(e, c, find2){
             var post = {
                 endDate : '0/0/0/0',
                 summary : 'Tsutida kun',
                 category: condition.category
             };
-            for(index in find){
-                post = find[index]
+            for(index in find2){
+                post = find2[index]
                 break;
             }
             var conts = [messageTemplate.FlexThemeMessage.getTemplate(post).content]
