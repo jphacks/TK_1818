@@ -10,6 +10,13 @@ class LINEMessage{
             'contents' : this.content
         }
     }
+    makeCarousel(arr){
+        this.content = {
+            "type" : "carousel",
+            "contents" : arr
+        }
+        return this
+    }
 };
 
 //wrapper用ビルダ(static使えないから外部に書いた)
