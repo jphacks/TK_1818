@@ -54,6 +54,8 @@ const MINA_POST = "みんなの投稿!";
 const TOP_RANKER = "上位ランキング";
 const POST_DO_IT = "自分も投稿してみる!!";
 
+const USE_RICH_MENU = "リッチメニューをご利用ください。";
+
 // -----------------------------------------------------------------------------
 // 定数の登録
 const TOP_CHOOSE = 1;
@@ -64,6 +66,9 @@ const OGRI_WRITE = OGRI_CHOOSE * 10;
 const TSUKOMI_WRITE = TSUKOMI_CHOOSE * 10;
 const ARU_WRITE = ARU_CHOOSE * 10;
 const WRITE_OK = 8;
+const WRITE_OK_OGRI = OGRI_WRITE*10;
+const WRITE_OK_TSUKOMI = TSUKOMI_WRITE*10;
+const WRITE_OK_ARU = ARU_WRITE*10;
 
 const RANDOM_SHOW_NUM = 5; //投稿表示の上限数
 
@@ -206,14 +211,17 @@ function messageTextProcessorCallBack(event, userID, userData){
         console.log("status: WRITE_NEXT!");
         nextStatus = stageWRITEProcessor(event, userData);
 
-    }else if(status == WRITE_OK){
+    }else if(status == WRITE_OK_OGRI || 
+            status == WRITE_OK_TSUKOMI ||
+            status == WRITE_OK_ARU){
         console.log("status: WRITE_GO!");
-        newStatus = stageWriteOKProcessor(event, userData);
+        nextStatus = stageWriteOKProcessor(event, userData);
     }else{
         console.log("status: NANIMO_NAI!");
         return;
     }
     userData['status'] = nextStatus;
+    console.log("NEXT STATUS: "+nextStatus);
     updateUserData(userData);
 }
 
@@ -242,9 +250,9 @@ function stageWriteOKProcessor(event, userData){
         // 投稿内容を訂正する
         console.log("status: FIX_POST!");
         deletePendingPostData(userData.userID);
-        makeNewPostData(userData.userID, text);
+        makeNewPostData(userData.userID, text, userData.status);
         replyConfirmMessage(event, text);
-        return WRITE_OK;
+        return userData.status;
     }
 }
 
@@ -272,15 +280,14 @@ function stageTOPProcessor(event, userData){
 
         return ARU_CHOOSE;
     }else if(text == LAST_POST){
-        //mahitodo
         //過去の投稿を表示
         console.log("status: SHOW_LAST_POSTS!");
-
+        showMyPost(event, userData);
         return TOP_CHOOSE;
     }else{
         //何もしない
         console.log("status: DO_NOTHING!");
-
+        replyUseRichMessage(event); //リッチメニューの使用を促す
         return TOP_CHOOSE;
     }
     /*
@@ -333,6 +340,28 @@ function stageTOPProcessor(event, userData){
 }
 
 /*
+ * 自分の過去の投稿を表示する
+ */
+function showMyPost(event, userData){
+    getDBData(event, 'post', {userID:userData.userID}, function(event, condition, find){
+        var conts = []
+        //flex post messageを配列にpush
+        for(index in find){
+            if(conts.length == 10)break;
+            conts.push(messageTemplate.MyselfResponceMessage.getTemplate(find[index], userData.userID).content)
+        }
+        //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
+        console.log(JSON.stringify(conts))
+        var msg = new LINEMessage(
+            {'content' : conts}
+        ).makeCarousel(conts).makeFlex('投稿内容表示')
+        if(conts.length != 0){
+            sendQuery(event.replyToken, msg)
+        }
+    });
+}
+
+/*
  * 各カテゴリの選択「random」「random」「insert」など
  * 返り値は次のステータス
  */
@@ -341,21 +370,30 @@ function stageCHOOSEProcessor(event, userData){
 
     if(text == MINA_POST){
         //「みんなの投稿を見る」処理
-        //mahitodo
         console.log("status: MIRU_MINNA!");
-
+        
+        // 自分以外のポストからランダムに5個選出
+        // mahitodo: カテゴリで絞り込み & ランダムポストの先頭にカテゴリメニューをくっつける
+        showRandomPost(event, {userID:{'$ne' : userData.userID}}); 
+        //
+        
         return userData.status;
     }else if(text == POST_DO_IT){
         //「自分も投稿する」処理
         console.log("status: JIBUN_TOKO!");
-
+        stage1POST(event, userData);
         var status = userData.status;
         return status * 10;
     }else if(text == TOP_RANKER){
         //「上位ランキング」処理
         //mahitodo
         console.log("status: TOP_RANKER!");
-
+        
+        // 自分以外のポストからトップ5を選出
+        // mahitodo: カテゴリで絞り込み & ポストの先頭にカテゴリメニューをくっつける
+        showTopPost(event, userData); 
+        //
+        
         return userData.status;
     }else if(text == TSUKOMI || text == ARU || text == OGIRI){
         //つっこみ、大喜利、あるある処理
@@ -401,8 +439,11 @@ function stageWRITEProcessor(event, userData){
     }else{
         //投稿文をDBに格納など
         console.log("status: SAVE_DATABASE!");
-
-        return WRITE_OK;
+        // 投稿内容が正しいかの確認を促す
+        // 投稿内容をDBに一時保存
+        makeNewPostData(userData.userID, text, userData.status);
+        replyConfirmMessage(event, text);
+        return userData.status*10;
     }
 
     /*
@@ -480,6 +521,16 @@ function replyPostDoneMessage(event){
     bot.replyMessage(event.replyToken, {
         type: "text",
         text: POST_DONE_MESSAGE
+    });
+}
+
+/*
+ * リッチメニューの使用を促すメッセージ
+ */
+function replyUseRichMessage(event){
+    bot.replyMessage(event.replyToken, {
+        type: "text",
+        text: USE_RICH_MENU
     });
 }
 
@@ -638,8 +689,8 @@ function makeNewUserData(userID){
 /*
  * DB上に新しいポストを作成する(まだ作業中なのでdateはpendingに設定)
  */
-function makeNewPostData(userID, text){
-    //todo: カテゴリをnewの時に入れなければいけない
+function makeNewPostData(userID, text, status){
+    var statusString = getCategoryFromStatus(status);
     //get sentimental magnitude and score
     Morphological.magnitude(text, function(sentiment_data, ret2){
         //run morphological
@@ -655,7 +706,7 @@ function makeNewPostData(userID, text){
                 score: sentiment_data.documentSentiment.score,
                 stamp: "",
                 date: "pending",
-                category: "",
+                category: statusString,
                 goodCount: 0,
                 badCount: 0,
                 sadCount: 0,
@@ -673,6 +724,24 @@ function makeNewPostData(userID, text){
             });
         })
     })
+}
+
+function getCategoryFromStatus(status){
+    if(status == OGRI_WRITE){
+        return OGIRI;
+    }else if(status == TSUKOMI_WRITE){
+        return TSUKOMI;
+    }else if(status == ARU_WRITE){
+        return ARU;
+    }else if(status == WRITE_OK_OGRI){
+        return OGIRI;
+    }else if(status == WRITE_OK_TSUKOMI){
+        return TSUKOMI;
+    }else if(status == WRITE_OK_ARU){
+        return ARU;
+    }else{
+        return "YABAI!!!";
+    }
 }
 
 /*
@@ -744,4 +813,40 @@ function shuffleArray(array){
         array[r] = tmp;
     }
     return array;
+}
+
+function showRandomPost(event, condition){
+    getRandomDBData(event, 5, 'post', condition, function(event, condition, find){
+        var conts = []
+        //flex post messageを配列にpush
+        for(index in find){
+            if(conts.length == 10)break;
+            conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
+        }
+        //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
+        var msg = new LINEMessage(
+            {'content' : conts}
+        ).makeCarousel(conts).makeFlex('投稿内容表示')
+        if(conts.length != 0){
+            sendQuery(event.replyToken, msg)
+        }
+    });
+}
+
+function showTopPost(event, userData){
+    getRandomDBData(event, 5, 'post', {userID:{'$ne' : userData.userID}}, function(event, condition, find){
+        var conts = []
+        //flex post messageを配列にpush
+        for(index in find){
+            if(conts.length == 10)break;
+            conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
+        }
+        //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
+        var msg = new LINEMessage(
+            {'content' : conts}
+        ).makeCarousel(conts).makeFlex('投稿内容表示')
+        if(conts.length != 0){
+            sendQuery(event.replyToken, msg)
+        }
+    });
 }
