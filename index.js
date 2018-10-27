@@ -186,28 +186,31 @@ function verifyUserCallBack(event, userID, userData){
  * userDataなどがデータベースからコールバックされてくる
  */
 function messageTextProcessorCallBack(event, userID, userData){
+    console.log("func: messageTextProcessorCallBack");
     if(userData == null)return;
 
     var status = userData['status'];
     var nextStatus = TOP_CHOOSE; //次にセットされるステータス
     if(status == TOP_CHOOSE){
+        console.log("status: TOP_CHOOSE");
         nextStatus = stageTOPProcessor(event, userData);
     }else if(status == OGRI_CHOOSE ||
              status == TSUKOMI_CHOOSE ||
              status == ARU_CHOOSE){
-                 
+        console.log("status: CHOOSE_NEXT!");         
         nextStatus = stageCHOOSEProcessor(event, userData);
         
     }else if(status == OGRI_WRITE ||
              status == TSUKOMI_WRITE ||
              status == ARU_WRITE){
-
+        console.log("status: WRITE_NEXT!");
         nextStatus = stageWRITEProcessor(event, userData);
 
     }else if(status == WRITE_OK){
-        
+        console.log("status: WRITE_GO!");
         newStatus = stageWriteOKProcessor(event, userData);
     }else{
+        console.log("status: NANIMO_NAI!");
         return;
     }
     userData['status'] = nextStatus;
@@ -219,17 +222,25 @@ function stageWriteOKProcessor(event, userData){
 
     if(text == CANCEL){
         // 「キャンセル」
+        console.log("status: CANCEL_WRITE_LATER!");
         deletePendingPostData(userData.userID);
         replyCancelMessage(event);
         return TOP_CHOOSE;
     }else if(text == ACCEPT_POST){
         // 「投稿する」
         // 投稿内容をDB上で確定する
+        console.log("status: ACCEPT_POST!");
         fixPostData(userData.userID);
         replyPostDoneMessage(event);
         return TOP_CHOOSE;
+    }else if(text == TSUKOMI || text == ARU || text == OGIRI){
+        // リッチメニューからカテゴリメニューに移動
+        console.log("status: CANCEL_WRITE_LATER_AND_MOVE_OTHERS!");
+        deletePendingPostData(userData.userID);
+        return stageTOPProcessor(event, userData);
     }else{
         // 投稿内容を訂正する
+        console.log("status: FIX_POST!");
         deletePendingPostData(userData.userID);
         makeNewPostData(userData.userID, text);
         replyConfirmMessage(event, text);
@@ -247,23 +258,29 @@ function stageTOPProcessor(event, userData){
     var text = event.message.text; //入力された文字
     if(text == OGIRI){
         //大喜利に移動
+        console.log("status: GO_OGIRI!");
 
         return OGRI_CHOOSE;
     }else if(text == TSUKOMI){
         //つっこみに移動
+        console.log("status: GO_TUKOMI!");
 
         return TSUKOMI_CHOOSE;
     }else if(text == ARU){
         //あるあるに移動
+        console.log("status: GO_ARU!");
 
         return ARU_CHOOSE;
     }else if(text == LAST_POST){
         //mahitodo
         //過去の投稿を表示
+        console.log("status: SHOW_LAST_POSTS!");
 
         return TOP_CHOOSE;
     }else{
         //何もしない
+        console.log("status: DO_NOTHING!");
+
         return TOP_CHOOSE;
     }
     /*
@@ -325,24 +342,29 @@ function stageCHOOSEProcessor(event, userData){
     if(text == MINA_POST){
         //「みんなの投稿を見る」処理
         //mahitodo
+        console.log("status: MIRU_MINNA!");
 
         return userData.status;
     }else if(text == POST_DO_IT){
         //「自分も投稿する」処理
+        console.log("status: JIBUN_TOKO!");
 
         var status = userData.status;
         return status * 10;
     }else if(text == TOP_RANKER){
         //「上位ランキング」処理
         //mahitodo
+        console.log("status: TOP_RANKER!");
 
         return userData.status;
     }else if(text == TSUKOMI || text == ARU || text == OGIRI){
         //つっこみ、大喜利、あるある処理
+        console.log("status: MOVE_OTHER!");
         return stageTOPProcessor(event, userData);
     }else{
         //それ以外
-        //todo: あとで直す
+        //todo: あとで窓が出るように直す
+        console.log("status: ATODE_NAOSU!");
         return userData.status;
     }
     /*
@@ -369,10 +391,16 @@ function stageWRITEProcessor(event, userData){
 
     if(text == CANCEL){
         //キャンセルして戻す
+        console.log("status: CANCEL_WRITE!");
         replyCancelMessage(event);
         return TOP_CHOOSE;
+    }else if(text == TSUKOMI || text == ARU || text == OGIRI){
+        // リッチメニューからカテゴリメニューに移動
+        console.log("status: CANCEL_WRITE_MOVE_OTHERS!");
+        return stageTOPProcessor(event, userData);
     }else{
         //投稿文をDBに格納など
+        console.log("status: SAVE_DATABASE!");
 
         return WRITE_OK;
     }
