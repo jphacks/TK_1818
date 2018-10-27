@@ -1,0 +1,103 @@
+{
+    "type": "bubble",
+    "styles": {
+        "header": {
+            "backgroundColor": "#2A2A2A"
+        },
+        "footer": {
+            "separator": true
+        }
+    },
+    "header": {
+        "type": "box",
+        "layout": "horizontal",
+        "contents": [{
+            "flex": 0,
+            "type": "image",
+            "url": "https://3.bp.blogspot.com/-tSzqnc5n4ak/UNQrWx6BLrI/AAAAAAAAI6g/wvAwk_K1Avg/s1600/mark_face_angry.png",
+            "size": "xxs"
+        }, {
+            "type": "text",
+            "color": "#FFFFFF",
+            "text": "　見出し",
+            "size": "xxl",
+            "weight": "bold"
+        }]
+    },
+    "body": {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [{
+            "type": "box",
+            "layout": "vertical",
+            "contents": [{
+                    "type": "text",
+                    "text": "お言葉",
+                    "size": "lg",
+                    "weight": "bold"
+                },
+                {
+                    "type": "text",
+                    "text": "それを防げるのがJSONを見やすく加工してくれるビューワーであったり、データをメンテナンスできるエディタです。今回はオープンソース・ソフトウェアを中心に紹介します。",
+                    "wrap": true
+                }
+            ]
+        }]
+    },
+    "footer": {
+        "type": "box",
+        "layout": "vertical",
+        "spacing": "md",
+        "contents": [{
+            "type": "box",
+            "layout": "horizontal",
+            "spacing": "md",
+            "contents": [{
+                    "type": "button",
+                    "style": "secondary",
+                    "action": {
+                        "type": "message",
+                        "label": "👍",
+                        "text": "いいね"
+                    }
+                },
+                {
+                    "type": "separator"
+                },
+                {
+                    "type": "button",
+                    "style": "secondary",
+                    "action": {
+                        "type": "message",
+                        "label": "👎",
+                        "text": "よくない"
+                    }
+                },
+                {
+                    "type": "separator"
+                },
+                {
+                    "type": "button",
+                    "style": "secondary",
+                    "action": {
+                        "type": "message",
+                        "label": "👋",
+                        "text": "わーい"
+                    }
+                },
+                {
+                    "type": "separator"
+                },
+                {
+                    "type": "button",
+                    "style": "secondary",
+                    "action": {
+                        "type": "message",
+                        "label": "🙏",
+                        "text": "尊い"
+                    }
+                }
+            ]
+        }]
+    }
+}
