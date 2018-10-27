@@ -102,7 +102,7 @@ module.exports = {
                                     "action": {
                                         "type": "message",
                                         "label": "みんなの投稿!",
-                                        "text": "いいね"
+                                        "text": "みんなの投稿!"
                                     },
                                     "color": "#4488ff"
                                 }
@@ -113,7 +113,7 @@ module.exports = {
                                     "action": {
                                         "type": "message",
                                         "label": "上位ランキング",
-                                        "text": "いいね"
+                                        "text": "上位ランキング"
                                     },
                                     "color": "#ff5500"
                                 }    
@@ -125,7 +125,7 @@ module.exports = {
                                     "action": {
                                         "type": "message",
                                         "label": "自分も投稿してみる!!",
-                                        "text": "いいね"
+                                        "text": "自分も投稿してみる!!"
                                     }
                                 }
                             ).build()
