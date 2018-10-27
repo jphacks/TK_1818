@@ -43,7 +43,7 @@ const CANCEL = "キャンセル";
 const SHOW = "表示";
 const POST = "投稿";
 const ACCEPT_POST = "投稿する";
-const DENY_POST = "訂正する";
+const MYSELF_SHOW = "見返す";
 
 // -----------------------------------------------------------------------------
 // 定数の登録
@@ -225,6 +225,24 @@ function stage1Processor(event, userData){
         //「投稿」
         stage1POST(event, userData);
         return 2;
+    }else if(text == MYSELF_SHOW){
+        getDBData(event, 'post', {userID:userData.userID}, function(event, condition, find){
+            var conts = []
+            //flex post messageを配列にpush
+            for(index in find){
+                if(conts.length == 10)break;
+                conts.push(messageTemplate.MyselfResponceMessage.getTemplate(find[index], userData.userID).content)
+            }
+            //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
+            console.log(JSON.stringify(conts))
+            var msg = new LINEMessage(
+                {'content' : conts}
+            ).makeCarousel(conts).makeFlex('投稿内容表示')
+            if(conts.length != 0){
+                sendQuery(event.replyToken, msg)
+            }
+        });
+        return 1
     }else{
         //それ以外なので、移動しない
         return 1;
