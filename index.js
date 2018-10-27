@@ -66,6 +66,9 @@ const OGRI_WRITE = OGRI_CHOOSE * 10;
 const TSUKOMI_WRITE = TSUKOMI_CHOOSE * 10;
 const ARU_WRITE = ARU_CHOOSE * 10;
 const WRITE_OK = 8;
+const WRITE_OK_OGRI = OGRI_WRITE*10;
+const WRITE_OK_TSUKOMI = TSUKOMI_WRITE*10;
+const WRITE_OK_ARU = ARU_WRITE*10;
 
 const RANDOM_SHOW_NUM = 5; //投稿表示の上限数
 
@@ -208,7 +211,9 @@ function messageTextProcessorCallBack(event, userID, userData){
         console.log("status: WRITE_NEXT!");
         nextStatus = stageWRITEProcessor(event, userData);
 
-    }else if(status == WRITE_OK){
+    }else if(status == WRITE_OK_OGRI || 
+            status == WRITE_OK_TSUKOMI ||
+            status == WRITE_OK_ARU){
         console.log("status: WRITE_GO!");
         newStatus = stageWriteOKProcessor(event, userData);
     }else{
@@ -244,9 +249,9 @@ function stageWriteOKProcessor(event, userData){
         // 投稿内容を訂正する
         console.log("status: FIX_POST!");
         deletePendingPostData(userData.userID);
-        makeNewPostData(userData.userID, text);
+        makeNewPostData(userData.userID, text, userData.status);
         replyConfirmMessage(event, text);
-        return WRITE_OK;
+        return userData.status;
     }
 }
 
@@ -433,8 +438,11 @@ function stageWRITEProcessor(event, userData){
     }else{
         //投稿文をDBに格納など
         console.log("status: SAVE_DATABASE!");
-
-        return WRITE_OK;
+        // 投稿内容が正しいかの確認を促す
+        // 投稿内容をDBに一時保存
+        makeNewPostData(userData.userID, text, userData.status);
+        replyConfirmMessage(event, text);
+        return userData.status*10;
     }
 
     /*
@@ -680,8 +688,8 @@ function makeNewUserData(userID){
 /*
  * DB上に新しいポストを作成する(まだ作業中なのでdateはpendingに設定)
  */
-function makeNewPostData(userID, text){
-    //todo: カテゴリをnewの時に入れなければいけない
+function makeNewPostData(userID, text, status){
+    var statusString = getCategoryFromStatus(status);
     //get sentimental magnitude and score
     Morphological.magnitude(text, function(sentiment_data, ret2){
         //run morphological
@@ -697,7 +705,7 @@ function makeNewPostData(userID, text){
                 score: sentiment_data.documentSentiment.score,
                 stamp: "",
                 date: "pending",
-                category: "",
+                category: statusString,
                 goodCount: 0,
                 badCount: 0,
                 sadCount: 0,
@@ -715,6 +723,24 @@ function makeNewPostData(userID, text){
             });
         })
     })
+}
+
+function getCategoryFromStatus(status){
+    if(status == OGRI_WRITE){
+        return OGIRI;
+    }else if(status == TSUKOMI_WRITE){
+        return TSUKOMI;
+    }else if(status == ARU_WRITE){
+        return ARU;
+    }else if(status == WRITE_OK_OGRI){
+        return OGIRI;
+    }else if(status == WRITE_OK_TSUKOMI){
+        return TSUKOMI;
+    }else if(status == WRITE_OK_ARU){
+        return ARU;
+    }else{
+        return "YABAI!!!";
+    }
 }
 
 /*
