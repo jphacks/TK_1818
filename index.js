@@ -402,12 +402,13 @@ function makeNewPostData(userID, text){
         Morphological.morphological(ret2, function(ret3) {
             //verifying ng word to *****.
             text = Verifier.verifyNGWord(ng_dict, ret3)
+            console.log(sentiment_data.documentSentiment)
             var ret_postData = {
                 postID: makeRandomString(),
                 userID: userID,
                 text: text,
-                magnitude: sentiment_data.sentences[0].sentiment.magnitude,
-                score: sentiment_data.sentences[0].sentiment.score,
+                magnitude: sentiment_data.documentSentiment.magnitude,
+                score: sentiment_data.documentSentiment.score,
                 stamp: "",
                 date: "pending",
                 category: "",
