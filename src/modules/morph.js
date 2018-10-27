@@ -1,5 +1,5 @@
 const request = require('request')
-function morphological(text){
+function morphological(text, callback){
     const options = {
         method: 'POST',
         uri: 'https://labs.goo.ne.jp/api/morph',
@@ -14,13 +14,33 @@ function morphological(text){
         },
         json: true
     }
-    return new Promise(function (resolve, reject) {
-        request(options, (error,response,body) => {
-            resolve(response.body.word_list)
-        });
+    request(options, (error,response,body) => {
+        callback(response.body.word_list)
+    });
+}
+function magnitude(text, callback) {
+    const options = {
+        method: 'POST',
+        uri: 'https://language.googleapis.com/v1/documents:analyzeSentiment?key='+process.env.GOOGLE_LANGUAGE_API_KEY,
+        header : {
+            'Content-Type': 'application/json'
+        },
+        body : {
+            "document": {
+                "type": "PLAIN_TEXT",
+                "language": "JA",
+                "content": text
+            },
+            "encodingType": "UTF8"
+        },
+        json: true
+    }
+    request(options, (err, response, body) => {
+        callback(response.body, text)
     })
 }
 
 module.exports = {
-    morphological
+    morphological,
+    magnitude
 }
