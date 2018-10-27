@@ -221,6 +221,7 @@ function messageTextProcessorCallBack(event, userID, userData){
         return;
     }
     userData['status'] = nextStatus;
+    console.log("NEXT STATUS: "+nextStatus);
     updateUserData(userData);
 }
 
