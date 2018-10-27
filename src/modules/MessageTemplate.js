@@ -132,7 +132,7 @@ module.exports = {
             )
         }
     },
-    MyselfResponceMessage : {
+    MyselfResponseMessage : {
         getTemplate : function(post) {
             var counter = 0
             var cont = new ContentsBuilder()
