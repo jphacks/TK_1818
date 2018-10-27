@@ -19,9 +19,6 @@ module.exports = {
                 .styles({
                     "header": {
                         "backgroundColor": "#2A2A2A"
-                    },
-                    "footer": {
-                        "separator": true
                     }
                 })
                 .header(
@@ -39,7 +36,7 @@ module.exports = {
                         {
                             "type": "text",
                             "color": "#FFFFFF",
-                            "text": post.theme,
+                            "text": post.category,
                             "size": "xl",
                             "weight": "bold"
                         }
@@ -60,9 +57,10 @@ module.exports = {
                             .contents(
                                 {
                                     "type": "text",
-                                    "text": "お言葉",
+                                    "text": post.theme,
                                     "size": "lg",
-                                    "weight": "bold"
+                                    "weight": "bold",
+                                    "wrap" : true
                                 }
                             )
                             .contents(
@@ -130,9 +128,9 @@ module.exports = {
                                         "text": "いいね"
                                     }
                                 }
-                            )
-                        )
-                    )
+                            ).build()
+                        ).build()
+                    ).build()
                 ).build()
             )
         }
