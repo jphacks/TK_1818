@@ -5,26 +5,8 @@ var MainBuilder = LINEModule.mainBuilder
 var ContentsBuilder = LINEModule.contentsBuilder
 
 module.exports = {
-    QuickReplyMessage: {
-        /*
-         * data : text(str), replies([{action}])
-         */
-        getTemplate : function(data, replies) {
-            var builder = new MainBuilder()
-                        .type('text')
-                        .text(data)
-            for(index in replies){
-                var act = replies[index]
-                builder.quickReply(
-                    new ActionBuilder()
-                    .action(act)
-                )
-            }
-            return new LINEMessage(builder.build())
-        }
-    },
     FlexPostMessage : {
-        getTemplate : function(post) {
+        getTemplate : function(post, pushUserID) {
             return new LINEMessage(
                 new MainBuilder()
                 .type('bubble')
@@ -109,9 +91,9 @@ module.exports = {
                                 "type": "button",
                                 "style": "secondary",
                                 "action": {
-                                    "type": "message",
+                                    "type": "postback",
                                     "label": "👍",
-                                    "text": "いいね"
+                                    "data": post.postID+":good:"+pushUserID
                                 }
                             }
                         ).contents(
@@ -124,9 +106,9 @@ module.exports = {
                                 "type": "button",
                                 "style": "secondary",
                                 "action": {
-                                    "type": "message",
+                                    "type": "postback",
                                     "label": "👎",
-                                    "text": "よくない"
+                                    "data": post.postID+":bad:"+pushUserID
                                 }
                             }
                         ).contents(
@@ -139,9 +121,9 @@ module.exports = {
                                 "type": "button",
                                 "style": "secondary",
                                 "action": {
-                                    "type": "message",
+                                    "type": "postback",
                                     "label": "👋",
-                                    "text": "わーい"
+                                    "data": post.postID+":sad:"+pushUserID, 
                                 }
                             }
                         ).contents(
@@ -154,9 +136,9 @@ module.exports = {
                                 "type": "button",
                                 "style": "secondary",
                                 "action": {
-                                    "type": "message",
+                                    "type": "postback",
                                     "label": "🙏",
-                                    "text": "尊い"
+                                    "data": post.postID+":angry:"+pushUserID
                                 }
                             }
                         ).contents(
