@@ -131,10 +131,12 @@ function stage1Processor(event, userData){
         //「表示」
         getDBData(event, 'post', {userID:userData.userID}, function(event, condition, find){
             var conts = []
+            //flex post messageを配列にpush
             for(index in find){
                 if(conts.length == 10)break;
                 conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index]).content)
             }
+            //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
             var msg = new LINEMessage(
                 {'content' : conts}
             ).makeCarousel(conts).makeFlex('投稿内容表示')
