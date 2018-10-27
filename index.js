@@ -500,8 +500,8 @@ function stageWRITEProcessor(event, userData){
 function stage1POST(event, userData){
     sendQuery(event.replyToken, 
         messageTemplate.QuickReplyMessage.getTemplate(
-            POST_MESSAGE,
-            [
+            {text : POST_MESSAGE,
+            replies : [
                 {
                     'type' : 'action',
                     'action' : {
@@ -510,7 +510,7 @@ function stage1POST(event, userData){
                         'text' : CANCEL
                     }
                 }
-            ]
+            ]}
         )
     )
 }
