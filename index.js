@@ -840,17 +840,16 @@ function shuffleArray(array){
     return array;
 }
 
-function showRandomPost(event, userData, condition){
+function showRandomPost(event, userData, condition, category){
     getRandomDBData(event, 5, 'post', condition, function(event, condition, find){
 
         var length = find.length;
         find = shuffleArray(find).slice(0, Math.min(RANDOM_SHOW_NUM, length));
-        //kokodayo
-        getDBData(event, 'theme', {category:text}, function(e, c, find){
+        getDBData(event, 'theme', {category:condition.category}, function(e, c, find){
             var post = {
                 endDate : '0/0/0/0',
                 summary : 'Tsutida kun',
-                category: text
+                category: condition.category
             };
             for(index in find){
                 post = find[index]
