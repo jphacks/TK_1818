@@ -364,21 +364,30 @@ function stageCHOOSEProcessor(event, userData){
 
     if(text == MINA_POST){
         //「みんなの投稿を見る」処理
-        //mahitodo
         console.log("status: MIRU_MINNA!");
-
+        
+        // 自分以外のポストからランダムに5個選出
+        // mahitodo: カテゴリで絞り込み & ランダムポストの先頭にカテゴリメニューをくっつける
+        showRandomPost(event, {userID:{'$ne' : userData.userID}}); 
+        //
+        
         return userData.status;
     }else if(text == POST_DO_IT){
         //「自分も投稿する」処理
         console.log("status: JIBUN_TOKO!");
-
+        stage1POST(event, userData);
         var status = userData.status;
         return status * 10;
     }else if(text == TOP_RANKER){
         //「上位ランキング」処理
         //mahitodo
         console.log("status: TOP_RANKER!");
-
+        
+        // 自分以外のポストからトップ5を選出
+        // mahitodo: カテゴリで絞り込み & ポストの先頭にカテゴリメニューをくっつける
+        showTopPost(event, userData); 
+        //
+        
         return userData.status;
     }else if(text == TSUKOMI || text == ARU || text == OGIRI){
         //つっこみ、大喜利、あるある処理
@@ -777,4 +786,40 @@ function shuffleArray(array){
         array[r] = tmp;
     }
     return array;
+}
+
+function showRandomPost(event, condition){
+    getRandomDBData(event, 5, 'post', condition, function(event, condition, find){
+        var conts = []
+        //flex post messageを配列にpush
+        for(index in find){
+            if(conts.length == 10)break;
+            conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
+        }
+        //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
+        var msg = new LINEMessage(
+            {'content' : conts}
+        ).makeCarousel(conts).makeFlex('投稿内容表示')
+        if(conts.length != 0){
+            sendQuery(event.replyToken, msg)
+        }
+    });
+}
+
+function showTopPost(event, userData){
+    getRandomDBData(event, 5, 'post', {userID:{'$ne' : userData.userID}}, function(event, condition, find){
+        var conts = []
+        //flex post messageを配列にpush
+        for(index in find){
+            if(conts.length == 10)break;
+            conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
+        }
+        //LINEMessageに配列を連想配列にして入れるとカルーセルもらえる
+        var msg = new LINEMessage(
+            {'content' : conts}
+        ).makeCarousel(conts).makeFlex('投稿内容表示')
+        if(conts.length != 0){
+            sendQuery(event.replyToken, msg)
+        }
+    });
 }
