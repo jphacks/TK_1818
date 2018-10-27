@@ -269,8 +269,7 @@ function displayTheme(event, text){
         }
         console.log("post : " , post)
         if(post != null){
-            console.log("template : ", messageTemplate.FlexThemeMessage.getTemplate(post).makeFlex('テーマ表示'))
-            sendQuery(event.replyToken,messageTemplate.FlexThemeMessage.getTemplate(post).makeFlex('テーマ表示'))
+            sendQuery(event.replyToken,messageTemplate.FlexThemeMessage.getTemplate(post, colors[text]).makeFlex('テーマ表示'))
         }
     })
 }
@@ -856,7 +855,7 @@ function showRandomPost(event, userData, condition, category){
                 post = find2[index]
                 break;
             }
-            var conts = [messageTemplate.FlexThemeMessage.getTemplate(post).content]
+            var conts = [messageTemplate.FlexThemeMessage.getTemplate(post, colors[condition.category]).content]
             //flex post messageを配列にpush
             for(index in find){
                 conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
@@ -894,7 +893,7 @@ function showTopPost(event, userData){
                 post = find2[index]
                 break;
             }
-            var conts = [messageTemplate.FlexThemeMessage.getTemplate(post).content]
+            var conts = [messageTemplate.FlexThemeMessage.getTemplate(post, getCategoryFromStatus(userData.status)).content]
             for(index in find){
                 conts.push(messageTemplate.MyselfResponseMessage.getTemplate(find[index], userData.userID).content)
             }
