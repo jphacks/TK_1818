@@ -3,6 +3,13 @@ class LINEMessage{
     constructor(builder) {
         this.content = builder.content
     }
+    makeFlex(text) {
+        return {
+            'type' : 'flex',
+            'contents' : this.content,
+            'altText' : text
+        }
+    }
 };
 
 //wrapper用ビルダ(static使えないから外部に書いた)
@@ -27,6 +34,10 @@ class MainBuilder{
         this.content['text'] = text
         return this
     }
+    altText(text){
+        this.content['altText'] = text
+        return this
+    }
     quickReply(item) {
         if(!this.content['quickReply']){
             this.content['quickReply'] = {}
@@ -37,11 +48,31 @@ class MainBuilder{
         this.content['quickReply']['items'].push(item)
         return this
     }
+    spacing(space){
+        this.content['spacing'] = space
+        return this
+    }
     contents(content) {
         if(!this.content['contents']){
             this.content['contents'] = []
         }
         this.content['contents'].push(content)
+        return this
+    }
+    styles(style){
+        this.content['styles'] = style
+        return this
+    }
+    header(head) {
+        this.content['header'] = head
+        return this
+    }
+    body(body) {
+        this.content['body'] = body
+        return this
+    }
+    footer(footer) {
+        this.content['footer'] = footer
         return this
     }
     build() {
@@ -71,14 +102,6 @@ class ContentsBuilder extends ActionBuilder{
     }
     layout(layout) {
         this.content['layout'] = layout
-        return this
-    }
-    body(body) {
-        this.content['body'] = body
-        return this
-    }
-    footer(footer) {
-        this.content['footer'] = footer
         return this
     }
     wrap(wrap) {

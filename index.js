@@ -4,6 +4,7 @@ const server = require("express")();
 const line = require("@line/bot-sdk"); // Messaging APIのSDKをインポート
 const mongodb = require('mongodb')
 const MongoClient = mongodb.MongoClient //mongodbを利用するためのインスタンス
+const messageTemplate = require('./src/modules/MessageTemplate')
 
 // -----------------------------------------------------------------------------
 // パラメータ設定
@@ -126,7 +127,11 @@ function stage1Processor(event, userData){
     var text = event.message.text; //入力された文字
     if(text == SHOW){
         //「表示」
-        
+        getDBData(event, 'post', {userID:userData.userID}, function(event, condition, find){
+            console.log(JSON.stringify(messageTemplate.FlexPostMessage.getTemplate(find).makeFlex("unchi")))
+            sendQuery(event.replyToken, messageTemplate.FlexPostMessage.getTemplate(find).makeFlex("unchinchin"))
+        });
+        return 1;
     }else if(text == POST){
         //「投稿」
         stage1POST(event, userData);
@@ -186,7 +191,7 @@ function stage3Processor(event, userData){
  * 投稿文の入力を促すメッセージを出す
  */
 function stage1POST(event, userData){
-    bot.replyMessage(event.replyToken, {
+    sendQuery(event.replyToken, {
         type: "text",
         text: POST_MESSAGE
     });
@@ -196,7 +201,7 @@ function stage1POST(event, userData){
  * スタートメッセージを送信
  */
 function replyStartMessage(event){
-    bot.replyMessage(event.replyToken, {
+    sendQuery(event.replyToken, {
         type: "text",
         text: START_MESSAGE
     });
@@ -269,6 +274,33 @@ function getNowDateString(){
     date.setTime(date.getTime() + 1000*60*60*9);// JSTに変換
     return sampleDate(date, 'YYYY/MM/DD hh:mm:ss');
 }
+
+function sendQuery(token, json) {
+    bot.replyMessage(token, json);
+}
+
+function getDBData(event, collectionName, condition, callback){
+    MongoClient.connect(mongodbURI, (error, client) => {
+        var collection;
+         const db = client.db(mongodbAddress);
+     
+        // コレクションの取得
+        collection = db.collection(collectionName);
+     
+        // コレクション中で条件に合致するドキュメントを取得
+        collection.find(condition).toArray((error, documents)=>{
+            var find = null;
+            for (var document of documents) {
+                console.log('find!');
+                console.log(document);
+                find = document;
+                break;
+            }
+            callback(event, condition, find);
+        });
+    });
+}
+
 
 /*
  * DBの「users」コレクションから指定したuserIDのデータを見つけて、callbackに投げる関数
