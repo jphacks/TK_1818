@@ -265,29 +265,7 @@ function stageWriteOKProcessor(event, userData){
 
 function displayTheme(event, text){
     getDBData(event, 'theme', {category:text}, function(e, c, find){
-        var post = null;
-        if (text == OGIRI) {
-            //大喜利のテーマ
-            post = {
-                endDate: '2018/11/01 12:15:30',
-                summary: '迷惑メールと知りつつも思わず開封してしまったタイトル(件名)とは？',
-                category: text
-            };
-        } else if (text == TSUKOMI) {
-            //つっこみのテーマ
-            post = {
-                endDate: '2018/10/29 14:11:01',
-                summary: 'お父さん！僕には、お金も仕事もやる気もプライドもありません。こんな僕でよければ、娘さんを僕にください！',
-                category: text
-            };
-        } else if (text == ARU) {
-            //あるある
-            post = {
-                endDate: '2018/11/15 10:02:39',
-                summary: '仕事の時は起きれないのに休みの日だけは早く起きれる。',
-                category: text
-            };
-        }
+        var post = getMockTheme(text);
         for(index in find){
             post = find[index]
             break;
@@ -893,17 +871,14 @@ function showRandomPost(event, userData, condition, category){
         var length = find.length;
         find = shuffleArray(find).slice(0, Math.min(RANDOM_SHOW_NUM, length));
         getDBData(event, 'theme', {category:condition.category}, function(e, c, find2){
-            var post = {
-                endDate : '0/0/0/0',
-                summary : 'Tsutida kun',
-                category: condition.category
-            };
+            var post = getMockTheme(getCategoryFromStatus(userData.status));
             for(index in find2){
                 post = find2[index]
                 break;
             }
             var conts = [messageTemplate.FlexThemeMessage.getTemplate(post, colors[condition.category]).content]
             //flex post messageを配列にpush
+            console.log("showRandomPost!");
             for(index in find){
                 conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
             }
@@ -930,11 +905,7 @@ function showTopPost(event, userData){
         var length = find.length;
         find = find.slice(0, Math.min(RANDOM_SHOW_NUM, length));
         getDBData(event, 'theme', {category:getCategoryFromStatus(userData.status)}, function(e, c, find2){
-            var post = {
-                endDate : '0/0/0/0',
-                summary : 'Tsutida kun',
-                category: getCategoryFromStatus(userData.status)
-            };
+            var post = getMockTheme(getCategoryFromStatus(userData.status));
             var conts = []
             for(index in find2){
                 post = find2[index]
@@ -953,4 +924,37 @@ function showTopPost(event, userData){
             }
         })
     });
+}
+
+function getMockTheme(text){
+    var post = null;
+    if (text == OGIRI) {
+        //大喜利のテーマ
+        post = {
+            endDate: '2018/11/01 12:15:30',
+            summary: '迷惑メールと知りつつも思わず開封してしまったタイトル(件名)とは？',
+            category: text
+        };
+    } else if (text == TSUKOMI) {
+        //つっこみのテーマ
+        post = {
+            endDate: '2018/10/29 14:11:01',
+            summary: 'お父さん！僕には、お金も仕事もやる気もプライドもありません。こんな僕でよければ、娘さんを僕にください！',
+            category: text
+        };
+    } else if (text == ARU) {
+        //あるある
+        post = {
+            endDate: '2018/11/15 10:02:39',
+            summary: '仕事の時は起きれないのに休みの日だけは早く起きれる。',
+            category: text
+        };
+    }else{
+        post = {
+            endDate: '2018/11/15 10:02:39',
+            summary: '仕事の時は起きれないのに休みの日だけは早く起きれる。',
+            category: text
+        };
+    }
+    return post;
 }

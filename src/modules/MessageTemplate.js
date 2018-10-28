@@ -45,13 +45,6 @@ module.exports = {
                     .layout('horizontal')
                     .contents(
                         {
-                            "flex": 0,
-                            "type": "image",
-                            "url": "https://1.bp.blogspot.com/-feZpLEvuGUM/WKFi-l2h5uI/AAAAAAABBrM/bDCwWhvg-W4jtez5fTdCu1SN1eC078DsgCLcB/s800/face_angry_man5.png",
-                            "size": "xs"
-                        }
-                    ).contents(
-                        {
                             "type": "text",
                             "color": "#FFFFFF",
                             "text": post.category,
@@ -72,6 +65,14 @@ module.exports = {
                             .type('box')
                             .layout('baseline')
                             .spacing('sm')
+                            .contents(
+                                {
+                                    "type": "text",
+                                    "text": "テーマ",
+                                    "size": "lg",
+                                    "weight": "bold",
+                                }
+                            )
                             .contents(
                                 {
                                     "type": "text",
@@ -210,7 +211,7 @@ module.exports = {
                         {
                             "type": "text",
                             "color": "#FFFFFF",
-                            "text": "　怒りのコメント",
+                            "text": post.category,
                             "size": "xl",
                             "weight": "bold"
                         }
@@ -231,7 +232,7 @@ module.exports = {
                             .contents(
                                 {
                                     "type": "text",
-                                    "text": "お言葉",
+                                    "text": " ",
                                     "size": "lg",
                                     "weight": "bold"
                                 }
@@ -249,7 +250,9 @@ module.exports = {
                             {
                                 "type": "text",
                                 "text": post.text,
-                                "wrap": true
+                                "wrap": true,
+                                "size": "xl",
+                                "weight": "bold"
                             }
                         ).build()
                     ).build()
@@ -310,7 +313,7 @@ module.exports = {
                         {
                             "type": "text",
                             "color": "#FFFFFF",
-                            "text": "　怒りのコメント",
+                            "text": post.category,
                             "size": "xl",
                             "weight": "bold"
                         }
@@ -331,7 +334,7 @@ module.exports = {
                             .contents(
                                 {
                                     "type": "text",
-                                    "text": "お言葉",
+                                    "text": "　",
                                     "size": "lg",
                                     "weight": "bold"
                                 }
@@ -349,7 +352,9 @@ module.exports = {
                             {
                                 "type": "text",
                                 "text": post.text,
-                                "wrap": true
+                                "wrap": true,
+                                "size": "xl",
+                                "weight": "bold"
                             }
                         ).build()
                     ).build()
