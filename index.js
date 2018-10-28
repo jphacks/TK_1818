@@ -257,7 +257,7 @@ function stageWriteOKProcessor(event, userData){
         // 投稿内容を訂正する
         console.log("status: FIX_POST!");
         deletePendingPostData(userData.userID);
-        makeNewPostData(userData.userID, text, userData.status);
+        makeNewPostData(userData, text, userData.status);
         replyConfirmMessage(event, text);
         return userData.status;
     }
@@ -265,29 +265,7 @@ function stageWriteOKProcessor(event, userData){
 
 function displayTheme(event, text){
     getDBData(event, 'theme', {category:text}, function(e, c, find){
-        var post = null;
-        if (text == OGIRI) {
-            //大喜利のテーマ
-            post = {
-                endDate: '2018/11/01 12:15:30',
-                summary: '迷惑メールと知りつつも思わず開封してしまったタイトル(件名)とは？',
-                category: text
-            };
-        } else if (text == TSUKOMI) {
-            //つっこみのテーマ
-            post = {
-                endDate: '2018/10/29 14:11:01',
-                summary: 'お父さん！僕には、お金も仕事もやる気もプライドもありません。こんな僕でよければ、娘さんを僕にください！',
-                category: text
-            };
-        } else if (text == ARU) {
-            //あるある
-            post = {
-                endDate: '2018/11/15 10:02:39',
-                summary: '仕事の時は起きれないのに休みの日だけは早く起きれる。',
-                category: text
-            };
-        }
+        var post = getMockTheme(text);
         for(index in find){
             post = find[index]
             break;
@@ -403,8 +381,6 @@ function showMyPost(event, userData){
         }
     });
 }
-
-/*
  * 各カテゴリの選択「random」「random」「insert」など
  * 返り値は次のステータス
  */
@@ -491,7 +467,7 @@ function stageWRITEProcessor(event, userData){
         console.log("status: SAVE_DATABASE!");
         // 投稿内容が正しいかの確認を促す
         // 投稿内容をDBに一時保存
-        makeNewPostData(userData.userID, text, userData.status);
+        makeNewPostData(userData, text, userData.status);
         replyConfirmMessage(event, text);
         return userData.status*10;
     }
@@ -658,6 +634,9 @@ function getDBData(event, collectionName, condition, callback){
                 console.log(document);
                 find.push(document);
             }
+            var length = find.length;
+            find = shuffleArray(find).slice(0, Math.min(RANDOM_SHOW_NUM, length));
+            
             callback(event, condition, find);
         });
     });
@@ -740,14 +719,18 @@ function updateUserData(userData){
  */
 function makeNewUserData(userID){
     var ret_userData = {'userID': userID, status: 1, showData: "", count: 0};
-    MongoClient.connect(mongodbURI, (error, client) => {
-        var collection;
-        const db = client.db(mongodbAddress);
-        // コレクションの取得
-        collection = db.collection('users');
-        collection.insertOne(ret_userData, (error, result) => {
-            console.log("inserted!");
-        });
+    const promise = bot.getProfile(userID);
+    Promise.all([promise]).then(function(values) {
+        ret_userData['pictureUrl'] = values[0].pictureUrl+".jpg"
+        MongoClient.connect(mongodbURI, (error, client) => {
+            var collection;
+            const db = client.db(mongodbAddress);
+            // コレクションの取得
+            collection = db.collection('users');
+            collection.insertOne(ret_userData, (error, result) => {
+                console.log("inserted!");
+            });
+        });
     });
     return ret_userData;
 }
@@ -755,7 +738,8 @@ function makeNewUserData(userID){
 /*
  * DB上に新しいポストを作成する(まだ作業中なのでdateはpendingに設定)
  */
-function makeNewPostData(userID, text, status){
+function makeNewPostData(userData, text, status){
+    var userID = userData.userID;
     var statusString = getCategoryFromStatus(status);
     //get sentimental magnitude and score
     Morphological.magnitude(text, function(sentiment_data, ret2){
@@ -763,6 +747,7 @@ function makeNewPostData(userID, text, status){
         Morphological.morphological(ret2, function(ret3) {
             //verifying ng word to *****.
             text = Verifier.verifyNGWord(ng_dict, ret3)
+            var theme = getMockTheme(statusString);
             console.log(sentiment_data.documentSentiment)
             var ret_postData = {
                 postID: makeRandomString(),
@@ -776,7 +761,9 @@ function makeNewPostData(userID, text, status){
                 goodCount: 0,
                 badCount: 0,
                 sadCount: 0,
-                angryCount: 0
+                angryCount: 0,
+                pictureUrl: userData.pictureUrl,
+                theme: theme
             };
             //temporary post mongo db client
             MongoClient.connect(mongodbURI, (error, client) => {
@@ -893,18 +880,16 @@ function showRandomPost(event, userData, condition, category){
         var length = find.length;
         find = shuffleArray(find).slice(0, Math.min(RANDOM_SHOW_NUM, length));
         getDBData(event, 'theme', {category:condition.category}, function(e, c, find2){
-            var post = {
-                endDate : '0/0/0/0',
-                summary : 'Tsutida kun',
-                category: condition.category
-            };
+            var post = getMockTheme(getCategoryFromStatus(userData.status));
             for(index in find2){
                 post = find2[index]
                 break;
             }
             var conts = [messageTemplate.FlexThemeMessage.getTemplate(post, colors[condition.category]).content]
             //flex post messageを配列にpush
+            console.log("showRandomPost!");
             for(index in find){
+                console.log(find[index]);
                 conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
             }
 
@@ -930,11 +915,7 @@ function showTopPost(event, userData){
         var length = find.length;
         find = find.slice(0, Math.min(RANDOM_SHOW_NUM, length));
         getDBData(event, 'theme', {category:getCategoryFromStatus(userData.status)}, function(e, c, find2){
-            var post = {
-                endDate : '0/0/0/0',
-                summary : 'Tsutida kun',
-                category: getCategoryFromStatus(userData.status)
-            };
+            var post = getMockTheme(getCategoryFromStatus(userData.status));
             var conts = []
             for(index in find2){
                 post = find2[index]
@@ -953,4 +934,37 @@ function showTopPost(event, userData){
             }
         })
     });
+}
+
+function getMockTheme(text){
+    var post = null;
+    if (text == OGIRI) {
+        //大喜利のテーマ
+        post = {
+            endDate: '2018/11/01 00:00:00',
+            summary: '3013年の流行語大賞を教えて下さい',
+            category: text
+        };
+    } else if (text == TSUKOMI) {
+        //つっこみのテーマ
+        post = {
+            endDate: '2018/10/29 14:11:01',
+            summary: 'お父さん！僕には、お金も仕事もやる気もプライドもありません。こんな僕でよければ、娘さんを僕にください！',
+            category: text
+        };
+    } else if (text == ARU) {
+        //あるある
+        post = {
+            endDate: '2018/11/15 10:02:39',
+            summary: '仕事の時は起きれないのに休みの日だけは早く起きれる。',
+            category: text
+        };
+    }else{
+        post = {
+            endDate: '2018/11/15 10:02:39',
+            summary: '仕事の時は起きれないのに休みの日だけは早く起きれる。',
+            category: text
+        };
+    }
+    return post;
 }

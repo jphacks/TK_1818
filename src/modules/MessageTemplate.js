@@ -13,6 +13,12 @@ var ContentsBuilder = LINEModule.contentsBuilder
 var stamp = {
     "good" : "イイね👍!"
 }
+
+const colors = {
+    "大喜利" : "#8e0000",
+    "つっこみ" : "#004413",
+    "あるある" : "#006b96"
+}
 module.exports = {
     QuickReplyMessage: {
         /*
@@ -31,6 +37,7 @@ module.exports = {
     },
     FlexThemeMessage : {
         getTemplate: function(post, headerColor) {
+            console.log("postpostpostpost: "+post);
             return new LINEMessage(
                 new MainBuilder()
                 .type('bubble')
@@ -44,13 +51,6 @@ module.exports = {
                     .type('box')
                     .layout('horizontal')
                     .contents(
-                        {
-                            "flex": 0,
-                            "type": "image",
-                            "url": "https://1.bp.blogspot.com/-feZpLEvuGUM/WKFi-l2h5uI/AAAAAAABBrM/bDCwWhvg-W4jtez5fTdCu1SN1eC078DsgCLcB/s800/face_angry_man5.png",
-                            "size": "xs"
-                        }
-                    ).contents(
                         {
                             "type": "text",
                             "color": "#FFFFFF",
@@ -75,9 +75,17 @@ module.exports = {
                             .contents(
                                 {
                                     "type": "text",
-                                    "text": "締め切り"+post.endDate,
+                                    "text": "テーマ",
+                                    "size": "lg",
+                                    "weight": "bold",
+                                }
+                            )
+                            .contents(
+                                {
+                                    "type": "text",
+                                    "text": "〆"+post.endDate,
                                     "color": "#aaaaaa",
-                                    "size": "sm",
+                                    "size": "xxs",
                                     "align": "end"
                                 }
                             ).build()
@@ -189,7 +197,7 @@ module.exports = {
                 .type('bubble')
                 .styles({
                     "header": {
-                        "backgroundColor": "#2A2A2A"
+                        "backgroundColor": colors[post.theme.category]
                     },
                     "footer": {
                         "separator": true
@@ -199,20 +207,22 @@ module.exports = {
                     new ContentsBuilder()
                     .type('box')
                     .layout('horizontal')
+                    .spacing('lg')
                     .contents(
                         {
                             "flex": 0,
                             "type": "image",
-                            "url": "https://1.bp.blogspot.com/-feZpLEvuGUM/WKFi-l2h5uI/AAAAAAABBrM/bDCwWhvg-W4jtez5fTdCu1SN1eC078DsgCLcB/s800/face_angry_man5.png",
-                            "size": "xs"
+                            "url": post.pictureUrl,
+                            "size": "xxs"
                         }
                     ).contents(
                         {
                             "type": "text",
                             "color": "#FFFFFF",
-                            "text": "　怒りのコメント",
-                            "size": "xl",
-                            "weight": "bold"
+                            "text": post.theme.summary,
+                            "size": "lg",
+                            "weight": "bold",
+                            "wrap": true
                         }
                     ).build()
                 ).body(
@@ -231,7 +241,7 @@ module.exports = {
                             .contents(
                                 {
                                     "type": "text",
-                                    "text": "お言葉",
+                                    "text": " ",
                                     "size": "lg",
                                     "weight": "bold"
                                 }
@@ -249,7 +259,9 @@ module.exports = {
                             {
                                 "type": "text",
                                 "text": post.text,
-                                "wrap": true
+                                "wrap": true,
+                                "size": "lg",
+                                "weight": "bold"
                             }
                         ).build()
                     ).build()
@@ -289,7 +301,7 @@ module.exports = {
                 .type('bubble')
                 .styles({
                     "header": {
-                        "backgroundColor": "#2A2A2A"
+                        "backgroundColor": colors[post.theme.category]
                     },
                     "footer": {
                         "separator": true
@@ -299,20 +311,22 @@ module.exports = {
                     new ContentsBuilder()
                     .type('box')
                     .layout('horizontal')
+                    .spacing('lg')
                     .contents(
                         {
                             "flex": 0,
                             "type": "image",
-                            "url": "https://1.bp.blogspot.com/-feZpLEvuGUM/WKFi-l2h5uI/AAAAAAABBrM/bDCwWhvg-W4jtez5fTdCu1SN1eC078DsgCLcB/s800/face_angry_man5.png",
-                            "size": "xs"
+                            "url": post.pictureUrl,
+                            "size": "xxs"
                         }
                     ).contents(
                         {
                             "type": "text",
                             "color": "#FFFFFF",
-                            "text": "　怒りのコメント",
-                            "size": "xl",
-                            "weight": "bold"
+                            "text": post.theme.summary,
+                            "size": "lg",
+                            "weight": "bold",
+                            "wrap": true
                         }
                     ).build()
                 ).body(
@@ -331,7 +345,7 @@ module.exports = {
                             .contents(
                                 {
                                     "type": "text",
-                                    "text": "お言葉",
+                                    "text": "　",
                                     "size": "lg",
                                     "weight": "bold"
                                 }
@@ -349,7 +363,9 @@ module.exports = {
                             {
                                 "type": "text",
                                 "text": post.text,
-                                "wrap": true
+                                "wrap": true,
+                                "size": "lg",
+                                "weight": "bold"
                             }
                         ).build()
                     ).build()
