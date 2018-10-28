@@ -14,6 +14,21 @@ var stamp = {
     "good" : "イイね👍!"
 }
 module.exports = {
+    QuickReplyMessage: {
+        /*
+         * data : text(str), replies([{}])
+         */
+        getTemplate : function(data) {
+            var builder = new MainBuilder()
+                        .type('text')
+                        .text(date.text)
+            for(index in data.replies){
+                var act = data.replies[index]
+                builder.quickReply(act)
+            }
+            return new LINEMessage(builder.build())
+        }
+    },
     FlexThemeMessage : {
         getTemplate: function(post) {
             return new LINEMessage(

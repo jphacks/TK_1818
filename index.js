@@ -8,6 +8,7 @@ const MongoClient = mongodb.MongoClient //mongodbを利用するためのイン�
 const messageTemplate = require('./src/modules/MessageTemplate')
 const LINEModule = require('./src/modules/LINEMessage')
 const LINEMessage = LINEModule.lineMessage
+const MainBuilder = LINEModule.mainBuilder
 const Verifier = require('./src/modules/verifier')
 const Morphological = require('./src/modules/morph')
 // -----------------------------------------------------------------------------
@@ -419,11 +420,17 @@ function stageCHOOSEProcessor(event, userData){
         //つっこみ、大喜利、あるある処理
         console.log("status: MOVE_OTHER!");
         return stageTOPProcessor(event, userData);
+    }else if(text == LAST_POST){
+        //過去の投稿を表示
+        console.log("status: SHOW_LAST_POSTS!");
+        showMyPost(event, userData);
+        return TOP_CHOOSE;
     }else{
         //それ以外
-        //todo: あとで窓が出るように直す
+        //todo: やだあああああ
         console.log("status: ATODE_NAOSU!");
-        return userData.status;
+        event.message.text = getCategoryFromStatus(userData.status);
+        return stageTOPProcessor(event, userData);
     }
     /*
     if(text == CANCEL){
@@ -494,7 +501,19 @@ function stageWRITEProcessor(event, userData){
 function stage1POST(event, userData){
     sendQuery(event.replyToken, {
         type: "text",
-        text: POST_MESSAGE
+        text: POST_MESSAGE,
+        "quickReply": {
+            "items": [
+              {
+                "type": "action",
+                "action": {
+                  "type": "message",
+                  "label": CANCEL,
+                  "text": CANCEL
+                }
+             }
+            ]
+        }
     });
 }
 
@@ -520,7 +539,27 @@ function replyStartMessage(event){
 function replyConfirmMessage(event, text){
     bot.replyMessage(event.replyToken, {
         type: "text",
-        text: CONFIRM_MESSAGE + "\n「" + text + "」"
+        text: CONFIRM_MESSAGE + "\n「" + text + "」",
+        "quickReply": {
+            "items": [
+              {
+                "type": "action",
+                "action": {
+                  "type": "message",
+                  "label": ACCEPT_POST,
+                  "text": ACCEPT_POST
+                }
+             },
+             {
+                "type": "action",
+                "action": {
+                  "type": "message",
+                  "label": CANCEL,
+                  "text": CANCEL
+                }
+             }
+            ]
+        }
     });
 }
 
