@@ -1,6 +1,8 @@
 # OH!-GIRI
 
-[![OH!-GIRI](./logo2.png)](https://www.youtube.com/watch?v=G5rULR53uMk)
+<a href="https://youtu.be/dyEFXCZNFXQ">
+<img width=100% src="./logo2.png" alt="">
+</a>
 
 ## 製品概要
 
