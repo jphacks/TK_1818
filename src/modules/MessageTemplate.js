@@ -30,13 +30,13 @@ module.exports = {
         }
     },
     FlexThemeMessage : {
-        getTemplate: function(post) {
+        getTemplate: function(post, headerColor) {
             return new LINEMessage(
                 new MainBuilder()
                 .type('bubble')
                 .styles({
                     "header": {
-                        "backgroundColor": "#2A2A2A"
+                        "backgroundColor": headerColor
                     }
                 })
                 .header(
