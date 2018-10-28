@@ -1,7 +1,7 @@
 # OH!-GIRI
 
 <a href="https://youtu.be/dyEFXCZNFXQ">
-<img width=100% src="./logo2.png" alt="">
+<img width=80% src="./logo2.png" alt="">
 </a>
 
 ## 製品概要
@@ -24,7 +24,7 @@
 
 ### 製品説明（具体的な製品の説明）
 
-![OH!-GRIキャプチャ画像](./S__1557102.jpg)
+<img width=70% src="./S__1557102.jpg" alt="">
 
 このLINEBot製品「OH!-GIRI」では、以下を実現することが可能である。
 
