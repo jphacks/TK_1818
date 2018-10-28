@@ -511,9 +511,9 @@ function stage1POST(event, userData){
                   "label": CANCEL,
                   "text": CANCEL
                 }
-              }
+             }
             ]
-          }
+        }
     });
 }
 
@@ -539,7 +539,27 @@ function replyStartMessage(event){
 function replyConfirmMessage(event, text){
     bot.replyMessage(event.replyToken, {
         type: "text",
-        text: CONFIRM_MESSAGE + "\n「" + text + "」"
+        text: CONFIRM_MESSAGE + "\n「" + text + "」",
+        "quickReply": {
+            "items": [
+              {
+                "type": "action",
+                "action": {
+                  "type": "message",
+                  "label": ACCEPT_POST,
+                  "text": ACCEPT_POST
+                }
+             },
+             {
+                "type": "action",
+                "action": {
+                  "type": "message",
+                  "label": CANCEL,
+                  "text": CANCEL
+                }
+             }
+            ]
+        }
     });
 }
 
