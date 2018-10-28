@@ -180,7 +180,7 @@ function insertEvalDataToDBCallBack(postID, type, pushUserID){
 function followProcessor(event){
     var userID = event.source.userId;
     getUserDataFromDB(event, userID, verifyUserCallBack);
-    replyStartMessage(event);
+    replyUseRichMessage(event);
 }
 
 /*
@@ -538,22 +538,6 @@ function stage1POST(event, userData){
             ]
         }
     });
-}
-
-/*
- * スタートメッセージを送信
- */
-function replyStartMessage(event){
-    sendQuery(event.replyToken, messageTemplate.QuickReplyMessage.getTemplate(
-        START_MESSAGE, 
-        {
-            "type": "text",
-            "label": "投稿"
-        },{
-            "type": "text",
-            "label": "表示"
-        }
-    ));
 }
 
 /*
