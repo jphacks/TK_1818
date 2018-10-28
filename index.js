@@ -8,6 +8,7 @@ const MongoClient = mongodb.MongoClient //mongodbを利用するためのイン�
 const messageTemplate = require('./src/modules/MessageTemplate')
 const LINEModule = require('./src/modules/LINEMessage')
 const LINEMessage = LINEModule.lineMessage
+const MainBuilder = LINEModule.mainBuilder
 const Verifier = require('./src/modules/verifier')
 const Morphological = require('./src/modules/morph')
 // -----------------------------------------------------------------------------
@@ -49,6 +50,12 @@ const OGIRI = "大喜利";
 const TSUKOMI = "つっこみ";
 const ARU = "あるある";
 const LAST_POST = "自分の投稿";
+
+const colors = {
+    "大喜利" : "#8e0000",
+    "つっこみ" : "#004413",
+    "あるある" : "#006b96"
+}
 
 const MINA_POST = "みんなの投稿!";
 const TOP_RANKER = "上位ランキング";
@@ -173,7 +180,7 @@ function insertEvalDataToDBCallBack(postID, type, pushUserID){
 function followProcessor(event){
     var userID = event.source.userId;
     getUserDataFromDB(event, userID, verifyUserCallBack);
-    replyStartMessage(event);
+    replyUseRichMessage(event);
 }
 
 /*
@@ -232,15 +239,15 @@ function stageWriteOKProcessor(event, userData){
         // 「キャンセル」
         console.log("status: CANCEL_WRITE_LATER!");
         deletePendingPostData(userData.userID);
-        replyCancelMessage(event);
-        return TOP_CHOOSE;
+        event.message.text = getCategoryFromStatus(userData.status);
+        return stageTOPProcessor(event, userData);
     }else if(text == ACCEPT_POST){
         // 「投稿する」
         // 投稿内容をDB上で確定する
         console.log("status: ACCEPT_POST!");
         fixPostData(userData.userID);
         replyPostDoneMessage(event);
-        return TOP_CHOOSE;
+        return userData.status/100;
     }else if(text == TSUKOMI || text == ARU || text == OGIRI){
         // リッチメニューからカテゴリメニューに移動
         console.log("status: CANCEL_WRITE_LATER_AND_MOVE_OTHERS!");
@@ -250,7 +257,7 @@ function stageWriteOKProcessor(event, userData){
         // 投稿内容を訂正する
         console.log("status: FIX_POST!");
         deletePendingPostData(userData.userID);
-        makeNewPostData(userData.userID, text, userData.status);
+        makeNewPostData(userData, text, userData.status);
         replyConfirmMessage(event, text);
         return userData.status;
     }
@@ -258,19 +265,14 @@ function stageWriteOKProcessor(event, userData){
 
 function displayTheme(event, text){
     getDBData(event, 'theme', {category:text}, function(e, c, find){
-        var post = {
-            endDate : '0/0/0/0',
-            summary : 'Tsutida kun',
-            category: text
-        };
+        var post = getMockTheme(text);
         for(index in find){
             post = find[index]
             break;
         }
         console.log("post : " , post)
         if(post != null){
-            console.log("template : ", messageTemplate.FlexThemeMessage.getTemplate(post).makeFlex('テーマ表示'))
-            sendQuery(event.replyToken,messageTemplate.FlexThemeMessage.getTemplate(post).makeFlex('テーマ表示'))
+            sendQuery(event.replyToken,messageTemplate.FlexThemeMessage.getTemplate(post, colors[text]).makeFlex('テーマ表示'))
         }
     })
 }
@@ -379,9 +381,7 @@ function showMyPost(event, userData){
         }
     });
 }
-
-/*
- * 各カテゴリの選択「random」「random」「insert」など
+ /* 各カテゴリの選択「random」「random」「insert」など
  * 返り値は次のステータス
  */
 function stageCHOOSEProcessor(event, userData){
@@ -419,11 +419,17 @@ function stageCHOOSEProcessor(event, userData){
         //つっこみ、大喜利、あるある処理
         console.log("status: MOVE_OTHER!");
         return stageTOPProcessor(event, userData);
+    }else if(text == LAST_POST){
+        //過去の投稿を表示
+        console.log("status: SHOW_LAST_POSTS!");
+        showMyPost(event, userData);
+        return userData.status;
     }else{
         //それ以外
-        //todo: あとで窓が出るように直す
+        //todo: やだあああああ
         console.log("status: ATODE_NAOSU!");
-        return userData.status;
+        event.message.text = getCategoryFromStatus(userData.status);
+        return stageTOPProcessor(event, userData);
     }
     /*
     if(text == CANCEL){
@@ -450,8 +456,8 @@ function stageWRITEProcessor(event, userData){
     if(text == CANCEL){
         //キャンセルして戻す
         console.log("status: CANCEL_WRITE!");
-        replyCancelMessage(event);
-        return TOP_CHOOSE;
+        event.message.text = getCategoryFromStatus(userData.status);
+        return stageTOPProcessor(event, userData);
     }else if(text == TSUKOMI || text == ARU || text == OGIRI){
         // リッチメニューからカテゴリメニューに移動
         console.log("status: CANCEL_WRITE_MOVE_OTHERS!");
@@ -461,7 +467,7 @@ function stageWRITEProcessor(event, userData){
         console.log("status: SAVE_DATABASE!");
         // 投稿内容が正しいかの確認を促す
         // 投稿内容をDBに一時保存
-        makeNewPostData(userData.userID, text, userData.status);
+        makeNewPostData(userData, text, userData.status);
         replyConfirmMessage(event, text);
         return userData.status*10;
     }
@@ -494,24 +500,20 @@ function stageWRITEProcessor(event, userData){
 function stage1POST(event, userData){
     sendQuery(event.replyToken, {
         type: "text",
-        text: POST_MESSAGE
-    });
-}
-
-/*
- * スタートメッセージを送信
- */
-function replyStartMessage(event){
-    sendQuery(event.replyToken, messageTemplate.QuickReplyMessage.getTemplate(
-        START_MESSAGE, 
-        {
-            "type": "text",
-            "label": "投稿"
-        },{
-            "type": "text",
-            "label": "表示"
+        text: POST_MESSAGE,
+        "quickReply": {
+            "items": [
+              {
+                "type": "action",
+                "action": {
+                  "type": "message",
+                  "label": CANCEL,
+                  "text": CANCEL
+                }
+             }
+            ]
         }
-    ));
+    });
 }
 
 /*
@@ -520,7 +522,27 @@ function replyStartMessage(event){
 function replyConfirmMessage(event, text){
     bot.replyMessage(event.replyToken, {
         type: "text",
-        text: CONFIRM_MESSAGE + "\n「" + text + "」"
+        text: CONFIRM_MESSAGE + "\n「" + text + "」",
+        "quickReply": {
+            "items": [
+              {
+                "type": "action",
+                "action": {
+                  "type": "message",
+                  "label": ACCEPT_POST,
+                  "text": ACCEPT_POST
+                }
+             },
+             {
+                "type": "action",
+                "action": {
+                  "type": "message",
+                  "label": CANCEL,
+                  "text": CANCEL
+                }
+             }
+            ]
+        }
     });
 }
 
@@ -612,6 +634,9 @@ function getDBData(event, collectionName, condition, callback){
                 console.log(document);
                 find.push(document);
             }
+            var length = find.length;
+            find = shuffleArray(find).slice(0, Math.min(RANDOM_SHOW_NUM, length));
+            
             callback(event, condition, find);
         });
     });
@@ -694,14 +719,18 @@ function updateUserData(userData){
  */
 function makeNewUserData(userID){
     var ret_userData = {'userID': userID, status: 1, showData: "", count: 0};
-    MongoClient.connect(mongodbURI, (error, client) => {
-        var collection;
-        const db = client.db(mongodbAddress);
-        // コレクションの取得
-        collection = db.collection('users');
-        collection.insertOne(ret_userData, (error, result) => {
-            console.log("inserted!");
-        });
+    const promise = bot.getProfile(userID);
+    Promise.all([promise]).then(function(values) {
+        ret_userData['pictureUrl'] = values[0].pictureUrl+".jpg"
+        MongoClient.connect(mongodbURI, (error, client) => {
+            var collection;
+            const db = client.db(mongodbAddress);
+            // コレクションの取得
+            collection = db.collection('users');
+            collection.insertOne(ret_userData, (error, result) => {
+                console.log("inserted!");
+            });
+        });
     });
     return ret_userData;
 }
@@ -709,7 +738,8 @@ function makeNewUserData(userID){
 /*
  * DB上に新しいポストを作成する(まだ作業中なのでdateはpendingに設定)
  */
-function makeNewPostData(userID, text, status){
+function makeNewPostData(userData, text, status){
+    var userID = userData.userID;
     var statusString = getCategoryFromStatus(status);
     //get sentimental magnitude and score
     Morphological.magnitude(text, function(sentiment_data, ret2){
@@ -717,6 +747,7 @@ function makeNewPostData(userID, text, status){
         Morphological.morphological(ret2, function(ret3) {
             //verifying ng word to *****.
             text = Verifier.verifyNGWord(ng_dict, ret3)
+            var theme = getMockTheme(statusString);
             console.log(sentiment_data.documentSentiment)
             var ret_postData = {
                 postID: makeRandomString(),
@@ -730,7 +761,9 @@ function makeNewPostData(userID, text, status){
                 goodCount: 0,
                 badCount: 0,
                 sadCount: 0,
-                angryCount: 0
+                angryCount: 0,
+                pictureUrl: userData.pictureUrl,
+                theme: theme
             };
             //temporary post mongo db client
             MongoClient.connect(mongodbURI, (error, client) => {
@@ -847,18 +880,16 @@ function showRandomPost(event, userData, condition, category){
         var length = find.length;
         find = shuffleArray(find).slice(0, Math.min(RANDOM_SHOW_NUM, length));
         getDBData(event, 'theme', {category:condition.category}, function(e, c, find2){
-            var post = {
-                endDate : '0/0/0/0',
-                summary : 'Tsutida kun',
-                category: condition.category
-            };
+            var post = getMockTheme(getCategoryFromStatus(userData.status));
             for(index in find2){
                 post = find2[index]
                 break;
             }
-            var conts = [messageTemplate.FlexThemeMessage.getTemplate(post).content]
+            var conts = [messageTemplate.FlexThemeMessage.getTemplate(post, colors[condition.category]).content]
             //flex post messageを配列にpush
+            console.log("showRandomPost!");
             for(index in find){
+                console.log(find[index]);
                 conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
             }
 
@@ -884,17 +915,13 @@ function showTopPost(event, userData){
         var length = find.length;
         find = find.slice(0, Math.min(RANDOM_SHOW_NUM, length));
         getDBData(event, 'theme', {category:getCategoryFromStatus(userData.status)}, function(e, c, find2){
-            var post = {
-                endDate : '0/0/0/0',
-                summary : 'Tsutida kun',
-                category: getCategoryFromStatus(userData.status)
-            };
+            var post = getMockTheme(getCategoryFromStatus(userData.status));
             var conts = []
             for(index in find2){
                 post = find2[index]
                 break;
             }
-            var conts = [messageTemplate.FlexThemeMessage.getTemplate(post).content]
+            var conts = [messageTemplate.FlexThemeMessage.getTemplate(post, colors[getCategoryFromStatus(userData.status)]).content]
             for(index in find){
                 conts.push(messageTemplate.MyselfResponseMessage.getTemplate(find[index], userData.userID).content)
             }
@@ -907,4 +934,37 @@ function showTopPost(event, userData){
             }
         })
     });
+}
+
+function getMockTheme(text){
+    var post = null;
+    if (text == OGIRI) {
+        //大喜利のテーマ
+        post = {
+            endDate: '2018/11/01 00:00:00',
+            summary: '3013年の流行語大賞を教えて下さい',
+            category: text
+        };
+    } else if (text == TSUKOMI) {
+        //つっこみのテーマ
+        post = {
+            endDate: '2018/10/29 14:11:01',
+            summary: 'お父さん！僕には、お金も仕事もやる気もプライドもありません。こんな僕でよければ、娘さんを僕にください！',
+            category: text
+        };
+    } else if (text == ARU) {
+        //あるある
+        post = {
+            endDate: '2018/11/15 10:02:39',
+            summary: '仕事の時は起きれないのに休みの日だけは早く起きれる。',
+            category: text
+        };
+    }else{
+        post = {
+            endDate: '2018/11/15 10:02:39',
+            summary: '仕事の時は起きれないのに休みの日だけは早く起きれる。',
+            category: text
+        };
+    }
+    return post;
 }
