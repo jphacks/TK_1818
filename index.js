@@ -381,7 +381,7 @@ function showMyPost(event, userData){
         }
     });
 }
- * 各カテゴリの選択「random」「random」「insert」など
+ /* 各カテゴリの選択「random」「random」「insert」など
  * 返り値は次のステータス
  */
 function stageCHOOSEProcessor(event, userData){
