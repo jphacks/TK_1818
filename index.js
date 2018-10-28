@@ -8,6 +8,7 @@ const MongoClient = mongodb.MongoClient //mongodbを利用するためのイン�
 const messageTemplate = require('./src/modules/MessageTemplate')
 const LINEModule = require('./src/modules/LINEMessage')
 const LINEMessage = LINEModule.lineMessage
+const MainBuilder = LINEModule.mainBuilder
 const Verifier = require('./src/modules/verifier')
 const Morphological = require('./src/modules/morph')
 // -----------------------------------------------------------------------------
@@ -498,21 +499,22 @@ function stageWRITEProcessor(event, userData){
  * 投稿文の入力を促すメッセージを出す
  */
 function stage1POST(event, userData){
-    sendQuery(event.replyToken, 
-        messageTemplate.QuickReplyMessage.getTemplate(
-            {text : POST_MESSAGE,
-            replies : [
-                {
-                    'type' : 'action',
-                    'action' : {
-                        'type' : 'message',
-                        'label' : CANCEL,
-                        'text' : CANCEL
-                    }
+    sendQuery(event.replyToken, {
+        type: "text",
+        text: POST_MESSAGE,
+        "quickReply": {
+            "items": [
+              {
+                "type": "action",
+                "action": {
+                  "type": "message",
+                  "label": CANCEL,
+                  "text": CANCEL
                 }
-            ]}
-        )
-    )
+              }
+            ]
+          }
+    });
 }
 
 /*
