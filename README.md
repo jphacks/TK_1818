@@ -1,6 +1,6 @@
-# OH!-GIRI
+# 大喜利ができるLINEBOT 「OH!-GIRI」
 
-<a href="https://youtu.be/dyEFXCZNFXQ">
+<a href="https://youtu.be/UwrGqQZre2c">
 <img width=80% src="./logo2.png" alt="">
 </a>
 
