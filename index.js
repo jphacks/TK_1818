@@ -257,7 +257,7 @@ function stageWriteOKProcessor(event, userData){
         // 投稿内容を訂正する
         console.log("status: FIX_POST!");
         deletePendingPostData(userData.userID);
-        makeNewPostData(userData.userID, text, userData.status);
+        makeNewPostData(userData, text, userData.status);
         replyConfirmMessage(event, text);
         return userData.status;
     }
@@ -469,7 +469,7 @@ function stageWRITEProcessor(event, userData){
         console.log("status: SAVE_DATABASE!");
         // 投稿内容が正しいかの確認を促す
         // 投稿内容をDBに一時保存
-        makeNewPostData(userData.userID, text, userData.status);
+        makeNewPostData(userData, text, userData.status);
         replyConfirmMessage(event, text);
         return userData.status*10;
     }
@@ -718,14 +718,18 @@ function updateUserData(userData){
  */
 function makeNewUserData(userID){
     var ret_userData = {'userID': userID, status: 1, showData: "", count: 0};
-    MongoClient.connect(mongodbURI, (error, client) => {
-        var collection;
-        const db = client.db(mongodbAddress);
-        // コレクションの取得
-        collection = db.collection('users');
-        collection.insertOne(ret_userData, (error, result) => {
-            console.log("inserted!");
-        });
+    const promise = bot.getProfile(userID);
+    Promise.all([promise]).then(function(values) {
+        ret_userData['pictureUrl'] = values[0].pictureUrl+".jpg"
+        MongoClient.connect(mongodbURI, (error, client) => {
+            var collection;
+            const db = client.db(mongodbAddress);
+            // コレクションの取得
+            collection = db.collection('users');
+            collection.insertOne(ret_userData, (error, result) => {
+                console.log("inserted!");
+            });
+        });
     });
     return ret_userData;
 }
@@ -733,7 +737,8 @@ function makeNewUserData(userID){
 /*
  * DB上に新しいポストを作成する(まだ作業中なのでdateはpendingに設定)
  */
-function makeNewPostData(userID, text, status){
+function makeNewPostData(userData, text, status){
+    var userID = userData.userID;
     var statusString = getCategoryFromStatus(status);
     //get sentimental magnitude and score
     Morphological.magnitude(text, function(sentiment_data, ret2){
@@ -741,6 +746,7 @@ function makeNewPostData(userID, text, status){
         Morphological.morphological(ret2, function(ret3) {
             //verifying ng word to *****.
             text = Verifier.verifyNGWord(ng_dict, ret3)
+            var theme = getMockTheme(statusString);
             console.log(sentiment_data.documentSentiment)
             var ret_postData = {
                 postID: makeRandomString(),
@@ -754,7 +760,9 @@ function makeNewPostData(userID, text, status){
                 goodCount: 0,
                 badCount: 0,
                 sadCount: 0,
-                angryCount: 0
+                angryCount: 0,
+                pictureUrl: userData.pictureUrl,
+                theme: theme
             };
             //temporary post mongo db client
             MongoClient.connect(mongodbURI, (error, client) => {
@@ -769,6 +777,8 @@ function makeNewPostData(userID, text, status){
         })
     })
 }
+
+
 
 function getCategoryFromStatus(status){
     if(status == OGRI_WRITE){
@@ -870,6 +880,7 @@ function showRandomPost(event, userData, condition, category){
 
         var length = find.length;
         find = shuffleArray(find).slice(0, Math.min(RANDOM_SHOW_NUM, length));
+        
         getDBData(event, 'theme', {category:condition.category}, function(e, c, find2){
             var post = getMockTheme(getCategoryFromStatus(userData.status));
             for(index in find2){
@@ -880,6 +891,7 @@ function showRandomPost(event, userData, condition, category){
             //flex post messageを配列にpush
             console.log("showRandomPost!");
             for(index in find){
+                console.log(find[index]);
                 conts.push(messageTemplate.FlexPostMessage.getTemplate(find[index], userData.userID).content)
             }
 
@@ -931,8 +943,8 @@ function getMockTheme(text){
     if (text == OGIRI) {
         //大喜利のテーマ
         post = {
-            endDate: '2018/11/01 12:15:30',
-            summary: '迷惑メールと知りつつも思わず開封してしまったタイトル(件名)とは？',
+            endDate: '2018/11/01 00:00:00',
+            summary: '3013年の流行語大賞を教えて下さい',
             category: text
         };
     } else if (text == TSUKOMI) {
