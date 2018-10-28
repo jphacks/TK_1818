@@ -233,15 +233,15 @@ function stageWriteOKProcessor(event, userData){
         // 「キャンセル」
         console.log("status: CANCEL_WRITE_LATER!");
         deletePendingPostData(userData.userID);
-        replyCancelMessage(event);
-        return TOP_CHOOSE;
+        event.message.text = getCategoryFromStatus(userData.status);
+        return stageTOPProcessor(event, userData);
     }else if(text == ACCEPT_POST){
         // 「投稿する」
         // 投稿内容をDB上で確定する
         console.log("status: ACCEPT_POST!");
         fixPostData(userData.userID);
         replyPostDoneMessage(event);
-        return TOP_CHOOSE;
+        return userData.status/100;
     }else if(text == TSUKOMI || text == ARU || text == OGIRI){
         // リッチメニューからカテゴリメニューに移動
         console.log("status: CANCEL_WRITE_LATER_AND_MOVE_OTHERS!");
@@ -424,7 +424,7 @@ function stageCHOOSEProcessor(event, userData){
         //過去の投稿を表示
         console.log("status: SHOW_LAST_POSTS!");
         showMyPost(event, userData);
-        return TOP_CHOOSE;
+        return userData.status;
     }else{
         //それ以外
         //todo: やだあああああ
@@ -457,8 +457,8 @@ function stageWRITEProcessor(event, userData){
     if(text == CANCEL){
         //キャンセルして戻す
         console.log("status: CANCEL_WRITE!");
-        replyCancelMessage(event);
-        return TOP_CHOOSE;
+        event.message.text = getCategoryFromStatus(userData.status);
+        return stageTOPProcessor(event, userData);
     }else if(text == TSUKOMI || text == ARU || text == OGIRI){
         // リッチメニューからカテゴリメニューに移動
         console.log("status: CANCEL_WRITE_MOVE_OTHERS!");
