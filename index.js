@@ -381,8 +381,6 @@ function showMyPost(event, userData){
         }
     });
 }
-
-/*
  * 各カテゴリの選択「random」「random」「insert」など
  * 返り値は次のステータス
  */
@@ -636,6 +634,9 @@ function getDBData(event, collectionName, condition, callback){
                 console.log(document);
                 find.push(document);
             }
+            var length = find.length;
+            find = shuffleArray(find).slice(0, Math.min(RANDOM_SHOW_NUM, length));
+            
             callback(event, condition, find);
         });
     });
@@ -778,8 +779,6 @@ function makeNewPostData(userData, text, status){
     })
 }
 
-
-
 function getCategoryFromStatus(status){
     if(status == OGRI_WRITE){
         return OGIRI;
@@ -880,7 +879,6 @@ function showRandomPost(event, userData, condition, category){
 
         var length = find.length;
         find = shuffleArray(find).slice(0, Math.min(RANDOM_SHOW_NUM, length));
-        
         getDBData(event, 'theme', {category:condition.category}, function(e, c, find2){
             var post = getMockTheme(getCategoryFromStatus(userData.status));
             for(index in find2){

@@ -19,7 +19,6 @@ const colors = {
     "つっこみ" : "#004413",
     "あるある" : "#006b96"
 }
-
 module.exports = {
     QuickReplyMessage: {
         /*
